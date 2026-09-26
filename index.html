@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>duo — estudio de diseño y fabricación digital</title>
+  <meta name="description" content="duo: impresión 3d, corte láser, modelado 3d, planimetrías, electrónica y sitios web. Objetos únicos hechos en Chile.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    /* ── FONTS ── */
+    @font-face {
+      font-family: 'PPNeueBit';
+      src: url('assets/PPNeueBit-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Absans';
+      src: url('assets/absans-main/fonts/Absans-Regular.woff2') format('woff2'),
+           url('assets/absans-main/fonts/Absans-Regular.woff') format('woff'),
+           url('assets/absans-main/fonts/Absans-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    img { display: block; }
+    button { font: inherit; color: inherit; }
+
+    /* ── BASE ── */
+    :root {
+      --bg:     #FFFFFF;
+      --paper:  #F3F3F1;   /* paneles / hojas */
+      --ink:    #111111;
+      --muted:  #8C8984;
+      --line:   rgba(17,17,17,0.14);
+      --accent: #C43820;
+
+      --px:    'PPNeueBit', monospace;
+      --serif: 'Instrument Serif', 'Times New Roman', serif;
+      --mono:  'IBM Plex Mono', ui-monospace, monospace;
+      --body:  'Absans', sans-serif;
+
+      --gutter: 28px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.55;
+      cursor: none;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: var(--ink); color: var(--bg); }
+
+    .mono {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.35;
+    }
+    .muted { color: var(--muted); }
+
+    /* ── CURSOR ── */
+    #cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 8px; height: 8px;
+      background: var(--ink);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s, background .2s, border-radius .2s;
+    }
+    #cursor.hover {
+      width: 44px; height: 44px;
+      background: transparent;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+    @media (hover: none) { #cursor { display: none; } body { cursor: auto; } }
+
+    /* ── NAV ── */
+    nav.top {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px var(--gutter);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .nav-logo { display: flex; align-items: center; height: 39.2px; color: var(--ink); text-decoration: none; gap: 4px; }
+    .nav-logo svg { height: 39.2px; width: auto; }
+
+    .nav-links { display: flex; gap: 28px; list-style: none; white-space: nowrap; }
+    .nav-links a {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--ink);
+      text-decoration: none;
+      padding-bottom: 2px;
+      border-bottom: 1px solid transparent;
+      transition: border-color .2s;
+    }
+    .nav-links a:hover { border-color: var(--ink); }
+    .nav-menu { display: none; background: none; border: none; font-size: 13px; cursor: none; }
+
+    /* ── SECTION HEAD ── */
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 14px var(--gutter);
+      border-top: 1px solid var(--line);
+    }
+    .section-head > :nth-child(2) { text-align: center; }
+    .section-head > :last-child   { text-align: right; }
+
+    .block-title {
+      font-family: var(--body);
+      font-weight: 400;
+      font-size: clamp(24px, 2.4vw, 34px);
+      letter-spacing: -0.01em;
+    }
+    .block-title sup { font-family: var(--mono); font-size: 12px; vertical-align: super; margin-left: 2px; }
+
+    /* ── HERO ── */
+    #hero {
+      height: 100vh;
+      height: 100svh;
+      min-height: 480px;
+      padding: 84px var(--gutter) 24px;
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .hero-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: var(--px);
+      font-weight: 700;
+      font-size: clamp(56px, min(14.5vw, calc((100vh - 122px) / 3.6)), 230px);
+      line-height: 0.8;
+      letter-spacing: -0.01em;
+      text-transform: lowercase;
+    }
+    .hero-line { position: relative; display: flex; align-items: center; gap: 0.08em; }
+    .side-note {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 17px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      white-space: nowrap;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .side-note.l { right: calc(100% + 28px); }
+    .side-note.r { left:  calc(100% + 28px); }
+    a.side-note:hover { font-style: italic; }
+    .hero-img {
+      display: block;
+      width: 0.95em;
+      aspect-ratio: 1;
+      overflow: hidden;
+      margin: 0.04em 0.02em 0.08em;
+      background: var(--paper);
+    }
+    .hero-img img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── TRABAJOS ── */
+    .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 24px;
+      padding: 56px var(--gutter) 24px;
+    }
+
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 0 var(--gutter) 96px;
+    }
+    .work { cursor: none; }
+    .work-img { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--paper); }
+    .work-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .7s cubic-bezier(.2,.7,.2,1), opacity .4s;
+    }
+    .work-img .alt { position: absolute; inset: 0; opacity: 0; }
+    .work:hover .work-img img { transform: scale(1.04); }
+    .work:hover .work-img .alt { opacity: 1; }
+    .work-cap { display: flex; justify-content: space-between; gap: 12px; padding: 10px 2px 16px; }
+
+    /* ── TIENDA ── */
+    .shop-note { padding: 0 var(--gutter); margin-top: -12px; margin-bottom: 24px; }
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 0 var(--gutter) 96px;
+    }
+    .product { display: flex; flex-direction: column; }
+    .product-img { aspect-ratio: 1; overflow: hidden; background: var(--paper); }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+    .product:hover .product-img img { transform: scale(1.04); }
+    .product-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 12px 0 4px;
+    }
+    .product-name { font-family: var(--body); font-size: 18px; line-height: 1.2; }
+    .product-buy {
+      align-self: flex-start;
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      text-decoration: none;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      padding: 7px 14px;
+      transition: background .2s, color .2s;
+    }
+    .product-buy:hover { background: var(--ink); color: var(--bg); }
+
+    /* ── SERVICIOS ── */
+    .svc-list { padding: 0 var(--gutter) 96px; }
+    .svc-row {
+      display: grid;
+      grid-template-columns: 60px 1.1fr 1fr 40px;
+      align-items: center;
+      gap: 24px;
+      padding: 26px 0;
+      border-top: 1px solid var(--line);
+      color: var(--ink);
+      text-decoration: none;
+      cursor: none;
+      transition: padding .3s cubic-bezier(.2,.7,.2,1);
+    }
+    .svc-row:last-child { border-bottom: 1px solid var(--line); }
+    .svc-row:hover { padding-left: 16px; }
+    .svc-name { font-family: var(--serif); font-size: clamp(36px, 4.6vw, 68px); line-height: 1; letter-spacing: -0.01em; }
+    .svc-row:hover .svc-name { font-style: italic; }
+    .svc-desc { font-size: 14px; line-height: 1.5; max-width: 380px; }
+    .svc-machines { display: block; margin-top: 8px; color: var(--muted); }
+    .svc-arrow { text-align: right; opacity: 0; transition: opacity .2s; }
+    .svc-row:hover .svc-arrow { opacity: 1; }
+    .svc-thumb { display: none; }
+
+    /* imagen que aparece sobre la lista al pasar el mouse */
+    .svc-preview {
+      position: fixed;
+      top: 0; left: 0;
+      width: 260px;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      pointer-events: none;
+      z-index: 400;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(.9);
+      transition: opacity .25s, transform .25s;
+    }
+    .svc-preview.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* táctil / móvil: sin hover, la imagen va dentro de la fila */
+    @media (hover: none), (max-width: 860px) {
+      .svc-preview { display: none; }
+      .svc-row { grid-template-columns: 28px 1fr 84px; gap: 4px 12px; padding: 18px 0; }
+      .svc-row:hover { padding-left: 0; }
+      .svc-num  { grid-row: 1; align-self: start; padding-top: 8px; }
+      .svc-name { grid-column: 2; font-size: 32px; }
+      .svc-desc { grid-column: 2; font-size: 13px; }
+      .svc-arrow { display: none; }
+      .svc-thumb { display: block; grid-column: 3; grid-row: 1 / span 2; width: 84px; aspect-ratio: 4 / 5; object-fit: cover; }
+    }
+
+    /* ── NOSOTROS ── */
+    .about {
+      display: flex;
+      justify-content: center;
+      padding: 72px var(--gutter) 110px;
+    }
+
+    .process-sheet {
+      width: min(100%, 760px);
+      background: var(--paper);
+      padding: 32px 32px 26px;
+      transform: rotate(-2deg);
+      box-shadow: 0 30px 60px -30px rgba(0,0,0,0.25);
+      transition: transform .6s cubic-bezier(.2,.7,.2,1);
+    }
+    .process-sheet:hover { transform: rotate(-0.6deg); }
+    .process-title { font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 4.4vw, 64px); line-height: 1; margin-bottom: 28px; }
+    .step-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 1.4fr;
+      gap: 16px;
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+    .specs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--ink);
+    }
+    .spec-value { font-family: var(--px); font-size: 20px; line-height: 1.1; margin-top: 6px; }
+
+    /* ── CONTACTO ── */
+    .contact {
+      display: flex;
+      justify-content: center;
+      padding: 56px var(--gutter) 96px;
+    }
+
+    .form-panel {
+      width: min(100%, 760px);
+      background: var(--paper);
+      padding: 32px 32px 32px;
+      transform: rotate(-2deg);
+      box-shadow: 0 30px 60px -30px rgba(0,0,0,0.25);
+      transition: transform .6s cubic-bezier(.2,.7,.2,1);
+    }
+    /* se endereza al usarlo para que escribir sea cómodo */
+    .form-panel:hover, .form-panel:focus-within { transform: rotate(0deg); }
+    .form-panel .process-title { margin-bottom: 4px; }
+    .order-form { display: flex; flex-direction: column; }
+
+    .form-section { padding: 24px 0; border-bottom: 1px solid var(--line); }
+    .form-section[data-only] { display: none; }
+    .order-form[data-tipo="impresion"] [data-only~="impresion"],
+    .order-form[data-tipo="laser"] [data-only~="laser"],
+    .order-form[data-tipo="modelado"] [data-only~="modelado"],
+    .order-form[data-tipo="planimetria"] [data-only~="planimetria"],
+    .order-form[data-tipo="electronica"] [data-only~="electronica"],
+    .order-form[data-tipo="web"] [data-only~="web"],
+    .order-form[data-tipo="producto"] [data-only~="producto"],
+    .order-form[data-tipo="otro"] [data-only~="otro"] { display: block; }
+
+    .form-kicker {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .form-label { display: block; font-family: var(--serif); font-size: 24px; line-height: 1.1; margin-bottom: 4px; }
+    .form-help { display: block; font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.45; }
+    .required { color: var(--accent); margin-left: 3px; }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 16px;
+      cursor: none;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .chip:hover { border-color: var(--ink); }
+    .chip.selected { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+    .color-picker { display: grid; grid-template-columns: repeat(13, 1fr); gap: 4px; }
+    .color-swatch { aspect-ratio: 1; border: 1px solid rgba(0,0,0,0.08); padding: 0; cursor: none; transition: transform .15s; }
+    .color-swatch:hover { transform: translateY(-3px); }
+    .color-swatch.selected { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--ink); }
+    .color-swatch.no-pref {
+      background: linear-gradient(45deg, transparent 47%, var(--line) 47%, var(--line) 53%, transparent 53%), var(--bg);
+      border: 1px dashed rgba(0,0,0,0.3);
+    }
+
+    .split { display: grid; grid-template-columns: 110px 1fr; gap: 28px; align-items: start; }
+    .qty-input {
+      width: 100%;
+      font-family: var(--px);
+      font-size: 28px;
+      padding: 4px 0;
+      border: none;
+      border-bottom: 1px solid var(--ink);
+      background: transparent;
+      outline: none;
+    }
+
+    .line-input, .contact-grid input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      outline: none;
+      padding: 8px 0;
+      font-family: var(--body);
+      font-size: 15px;
+      transition: border-color .2s;
+    }
+    .line-input:focus, .contact-grid input:focus { border-color: var(--ink); }
+    .desc-area {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      padding: 14px;
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .desc-area:focus { border-color: var(--ink); }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+    .contact-grid .full { grid-column: 1 / -1; }
+    .mini-label { display: block; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.7; }
+
+    .submit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+    .btn-submit, .btn-submit-alt {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      font-family: var(--mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--ink);
+      cursor: none;
+      transition: background .2s, color .2s;
+    }
+    .btn-submit { background: var(--ink); color: var(--bg); }
+    .btn-submit:hover { background: var(--accent); border-color: var(--accent); }
+    .btn-submit-alt { background: transparent; }
+    .btn-submit-alt:hover { background: var(--ink); color: var(--bg); }
+    .form-note { margin-top: 14px; }
+
+    .success-card { display: none; padding: 40px 0; }
+    .success-title { font-family: var(--serif); font-weight: 400; font-size: 44px; line-height: 1; margin-bottom: 14px; }
+    .success-text { font-size: 15px; line-height: 1.65; max-width: 420px; }
+
+    /* ── FOOTER ── */
+    footer { padding: 56px var(--gutter) 24px; border-top: 1px solid var(--line); }
+    .foot-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 32px;
+      padding-bottom: 56px;
+    }
+    .foot-name { font-size: 22px; line-height: 1.2; margin-bottom: 6px; }
+    .foot-tag { font-size: 14px; color: var(--muted); max-width: 240px; }
+    .foot-col .mono { margin-bottom: 14px; }
+    .foot-col a {
+      display: block;
+      width: fit-content;
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .foot-col a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .foot-base {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 72px var(--gutter) var(--gutter);
+      background: color-mix(in srgb, var(--bg) 94%, transparent);
+      backdrop-filter: blur(6px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal { width: 100%; max-width: 980px; display: grid; grid-template-columns: 1.1fr 1fr; background: var(--paper); }
+    .modal-img-wrap { aspect-ratio: 4 / 5; overflow: hidden; }
+    .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-info { padding: 32px; display: flex; flex-direction: column; gap: 18px; }
+    .modal-name { font-family: var(--serif); font-weight: 400; font-size: 44px; line-height: 1; }
+    .modal-desc { font-size: 15px; line-height: 1.65; flex: 1; }
+    .modal-close {
+      position: fixed;
+      top: 18px; right: var(--gutter);
+      background: none;
+      border: none;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      cursor: none;
+    }
+    .btn-modal-order {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--ink);
+      color: var(--bg);
+      border: none;
+      font-family: var(--mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: none;
+      transition: background .2s;
+    }
+    .btn-modal-order:hover { background: var(--accent); }
+
+    /* ── WHATSAPP FLOTANTE ── */
+    .float-wa {
+      position: fixed;
+      right: var(--gutter);
+      bottom: 24px;
+      z-index: 90;
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity .3s, transform .3s;
+    }
+    .float-wa.visible { opacity: 1; pointer-events: auto; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) {
+      .side-note { display: none; }
+      .works-grid, .shop-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 860px) {
+      :root { --gutter: 16px; }
+
+      .nav-menu { display: block; }
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%; left: 0; right: 0;
+        flex-direction: column;
+        gap: 0;
+        padding: 8px var(--gutter) 20px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+      nav.top.open .nav-links { display: flex; }
+      .nav-links a { display: block; padding: 10px 0; font-size: 22px; font-family: var(--serif); }
+
+      .section-head { grid-template-columns: 1fr 1fr; }
+      .section-head > :nth-child(2) { display: none; }
+      .bar { flex-direction: column; align-items: flex-start; padding-top: 40px; }
+
+      .works-grid, .shop-grid { grid-template-columns: 1fr 1fr; }
+      .shop-grid { gap: 20px 8px; }
+      .product-row { flex-direction: column; gap: 4px; }
+      .product-name { font-size: 16px; }
+
+      .process-sheet { transform: rotate(-1deg); padding: 26px 18px 20px; }
+      .step-row { grid-template-columns: 26px 1fr; }
+      .step-row > :last-child { grid-column: 2; }
+      .form-panel { padding: 26px 18px 22px; transform: rotate(-1deg); }
+
+      .foot-grid { grid-template-columns: 1fr 1fr; gap: 36px 24px; }
+      .foot-brand { grid-column: 1 / -1; }
+      .modal { grid-template-columns: 1fr; max-height: 100%; overflow: auto; }
+      .modal-img-wrap { aspect-ratio: 16 / 10; }
+    }
+
+    @media (max-width: 540px) {
+      .hero-stack { font-size: min(19vw, calc((100vh - 122px) / 3.6)); }
+      .submit-row, .contact-grid, .split { grid-template-columns: 1fr; }
+      .color-picker { grid-template-columns: repeat(7, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- NAV -->
+<nav class="top">
+  <a href="#hero" class="nav-logo" aria-label="duo inicio">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 605.65 453.86" role="img" aria-label="duo">
+      <style>
+        .nl1 { font-family: PPNeueBit, 'PPNeueBit-Bold', monospace; font-size: 488.7px; font-weight: 700; }
+        .nl2 { letter-spacing: .05em; }
+        .nl3 { letter-spacing: .04em; }
+      </style>
+      <text class="nl1" transform="translate(0 366.52)">
+        <tspan class="nl3" x="0" y="0">d</tspan>
+        <tspan class="nl3" x="211.6" y="0">u</tspan>
+        <tspan class="nl2" x="413.8" y="0">o</tspan>
+      </text>
+      <rect x="228.93" y="349.1" width="17.42" height="17.42"/>
+      <rect x="431.79" y="349.1" width="17.42" height="17.42"/>
+      <rect x="17.42"  y="349.1" width="17.42" height="17.42"/>
+      <rect x="174.35" y="122.17" width="17.42" height="17.42"/>
+      <rect x="376.12" y="192.09" width="17.42" height="17.42"/>
+    </svg>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#tienda">tienda</a></li>
+    <li><a href="#servicios">servicios</a></li>
+    <li><a href="#proyectos">proyectos</a></li>
+    <li><a href="#nosotros">nosotros</a></li>
+    <li><a href="#contacto">contacto</a></li>
+  </ul>
+  <button type="button" class="nav-menu" id="navMenu" aria-expanded="false">menú</button>
+</nav>
+
+<a href="#" class="float-wa" id="floatWa" target="_blank" rel="noopener" aria-label="escribir por whatsapp">whatsapp ↗</a>
+
+<!-- 1 · HERO -->
+<section id="hero">
+  <h1 class="hero-stack" aria-label="hacemos objetos únicos">
+    <span class="hero-line">
+      <span class="side-note l">estudio de diseño</span>
+      hacemos
+    </span>
+    <span class="hero-line">objetos</span>
+    <span class="hero-line">
+      <span>*(</span>
+      <a href="#proyectos" class="hero-img" aria-label="ver proyectos"
+        data-cycle="assets/img/lampara-1.jpg assets/img/florero-arco.jpg assets/img/robot.jpg assets/img/escritorio.jpg assets/img/muestrario.jpg assets/img/lampara-2.jpg assets/img/wearable.jpg">
+        <img id="heroImg" src="assets/img/lampara-1.jpg" alt="lámpara torsión encendida">
+      </a>
+      <span>)</span>
+      <a href="#tienda" class="side-note r">tienda</a>
+    </span>
+    <span class="hero-line">
+      <a href="#servicios" class="side-note l">servicios</a>
+      únicos
+    </span>
+  </h1>
+</section>
+
+<!-- 2 · TIENDA -->
+<section id="tienda">
+  <div class="section-head mono">
+    <span>(01) tienda</span>
+    <span>productos disponibles</span>
+    <span>04 productos</span>
+  </div>
+  <div class="bar">
+    <h2 class="block-title">productos disponibles<sup>(04)</sup></h2>
+  </div>
+  <p class="shop-note mono muted">compra por whatsapp · envío o retiro</p>
+  <div class="shop-grid" id="shopGrid"></div>
+</section>
+
+<!-- 3 · SERVICIOS -->
+<section id="servicios">
+  <div class="section-head mono">
+    <span>(02) servicios</span>
+    <span>a pedido</span>
+    <span>06 servicios</span>
+  </div>
+  <div class="bar">
+    <h2 class="block-title">servicios<sup>(06)</sup></h2>
+  </div>
+
+  <div class="svc-list">
+    <a href="#contacto" class="svc-row" data-tipo="impresion" data-img="assets/img/muestrario.jpg">
+      <span class="svc-num mono">01</span>
+      <span class="svc-name">impresión 3d</span>
+      <span class="svc-desc">piezas a medida desde tu archivo o una idea · PLA, PETG y TPU en 12 colores · entrega en 24 a 72 h
+        <span class="svc-machines mono">equipos: creality sparkx i7 · creality hi</span></span>
+      <span class="svc-arrow">→</span>
+      <img class="svc-thumb" src="assets/img/muestrario.jpg" alt="" loading="lazy">
+    </a>
+    <a href="#contacto" class="svc-row" data-tipo="laser" data-img="assets/img/laser.jpg">
+      <span class="svc-num mono">02</span>
+      <span class="svc-name">corte láser</span>
+      <span class="svc-desc">corte y grabado a medida desde tu archivo vectorial o una idea
+        <span class="svc-machines mono">equipo: creality falcon 10w pro (cv-30)</span></span>
+      <span class="svc-arrow">→</span>
+      <img class="svc-thumb" src="assets/img/laser.jpg" alt="" loading="lazy">
+    </a>
+    <a href="#contacto" class="svc-row" data-tipo="modelado" data-img="assets/img/instalacion-render.jpg">
+      <span class="svc-num mono">03</span>
+      <span class="svc-name">modelado 3d y renders</span>
+      <span class="svc-desc">modelamos tu pieza desde una idea o un boceto, y la mostramos en renders antes de fabricarla</span>
+      <span class="svc-arrow">→</span>
+      <img class="svc-thumb" src="assets/img/instalacion-render.jpg" alt="" loading="lazy">
+    </a>
+    <a href="#contacto" class="svc-row" data-tipo="planimetria" data-img="assets/img/escritorio.jpg">
+      <span class="svc-num mono">04</span>
+      <span class="svc-name">planimetrías</span>
+      <span class="svc-desc">planos para fabricar tu pieza o proyecto</span>
+      <span class="svc-arrow">→</span>
+      <img class="svc-thumb" src="assets/img/escritorio.jpg" alt="" loading="lazy">
+    </a>
+    <a href="#contacto" class="svc-row" data-tipo="electronica" data-img="assets/img/wearable.jpg">
+      <span class="svc-num mono">05</span>
+      <span class="svc-name">electrónica</span>
+      <span class="svc-desc">prototipos electrónicos, wearables y objetos que reaccionan</span>
+      <span class="svc-arrow">→</span>
+      <img class="svc-thumb" src="assets/img/wearable.jpg" alt="" loading="lazy">
+    </a>
+    <a href="#contacto" class="svc-row" data-tipo="web" data-img="assets/img/web.jpg">
+      <span class="svc-num mono">06</span>
+      <span class="svc-name">sitios web</span>
+      <span class="svc-desc">diseñamos y programamos sitios a medida, como este</span>
+      <span class="svc-arrow">→</span>
+      <img class="svc-thumb" src="assets/img/web.jpg" alt="" loading="lazy">
+    </a>
+  </div>
+  <img class="svc-preview" id="svcPreview" src="" alt="" aria-hidden="true">
+</section>
+
+<!-- 4 · PROYECTOS -->
+<section id="proyectos">
+  <div class="section-head mono">
+    <span>(03) proyectos</span>
+    <span>selección</span>
+    <span>04 piezas</span>
+  </div>
+  <div class="bar">
+    <h2 class="block-title">proyectos<sup>(04)</sup></h2>
+  </div>
+  <div class="works-grid" id="worksGrid"></div>
+</section>
+
+<!-- 5 · NOSOTROS -->
+<section id="nosotros">
+  <div class="section-head mono">
+    <span>(04) nosotros</span>
+    <span>estudio</span>
+    <span>chile</span>
+  </div>
+  <div class="about">
+    <div class="process-sheet">
+      <h3 class="process-title">proceso</h3>
+      <div class="step-row"><span class="mono">a.</span><span class="mono muted">idea</span><span>nos cuentas qué necesitas: forma, medidas, uso y referencias.</span></div>
+      <div class="step-row"><span class="mono">b.</span><span class="mono muted">cotización</span><span>te enviamos presupuesto y plazo en menos de 48 h.</span></div>
+      <div class="step-row"><span class="mono">c.</span><span class="mono muted">fabricación</span><span>confirmas, fabricamos y coordinamos retiro o envío.</span></div>
+      <div class="specs">
+        <div><p class="mono muted">tecnología</p><p class="spec-value">FDM</p></div>
+        <div><p class="mono muted">resolución</p><p class="spec-value">0.1mm</p></div>
+        <div><p class="mono muted">respuesta</p><p class="spec-value">&lt; 48h</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · CONTACTO -->
+<section id="contacto">
+  <div class="section-head mono">
+    <span>(05) contacto</span>
+    <span>cotización gratis</span>
+    <span>&lt; 48 h</span>
+  </div>
+
+  <div class="contact">
+    <div class="form-panel">
+      <h3 class="process-title">contacto</h3>
+      <form class="order-form" id="orderForm" novalidate>
+
+        <div class="form-section">
+          <span class="form-label">¿qué necesitas?<span class="required">*</span></span>
+          <div class="chip-row" data-field="tipo">
+            <button type="button" class="chip" data-value="impresion">impresión 3d</button>
+            <button type="button" class="chip" data-value="laser">corte láser</button>
+            <button type="button" class="chip" data-value="modelado">modelado 3d / renders</button>
+            <button type="button" class="chip" data-value="planimetria">planimetría</button>
+            <button type="button" class="chip" data-value="electronica">electrónica</button>
+            <button type="button" class="chip" data-value="web">sitio web</button>
+            <button type="button" class="chip" data-value="producto">comprar un producto</button>
+            <button type="button" class="chip" data-value="otro">otro</button>
+          </div>
+          <input type="hidden" name="tipo" id="fld-tipo">
+        </div>
+
+        <!-- solo impresión 3d -->
+        <div class="form-section" data-only="impresion">
+          <span class="form-kicker">material</span>
+          <span class="form-help">PLA: rígido y económico · PETG: resistente al calor · TPU: flexible</span>
+          <div class="chip-row" data-field="material">
+            <button type="button" class="chip" data-value="PLA">PLA</button>
+            <button type="button" class="chip" data-value="PETG">PETG</button>
+            <button type="button" class="chip" data-value="TPU">TPU (flexible)</button>
+            <button type="button" class="chip selected" data-value="ayúdenme a elegir">ayúdenme a elegir</button>
+          </div>
+          <input type="hidden" name="material" id="fld-material" value="ayúdenme a elegir">
+        </div>
+
+        <div class="form-section" data-only="impresion">
+          <span class="form-kicker">color</span>
+          <div class="color-picker" id="colorPicker"></div>
+          <input type="hidden" name="color" id="fld-color" value="sin preferencia">
+        </div>
+
+        <div class="form-section" data-only="impresion">
+          <div class="split">
+            <div>
+              <span class="form-kicker">cantidad</span>
+              <input type="number" min="1" value="1" name="cantidad" class="qty-input">
+            </div>
+            <div>
+              <span class="form-kicker">plazo</span>
+              <div class="chip-row" data-field="urgencia">
+                <button type="button" class="chip" data-value="24 h">24 h</button>
+                <button type="button" class="chip" data-value="48 h">48 h</button>
+                <button type="button" class="chip" data-value="72 h">72 h</button>
+                <button type="button" class="chip selected" data-value="flexible">flexible</button>
+              </div>
+              <input type="hidden" name="urgencia" id="fld-urgencia" value="flexible">
+            </div>
+          </div>
+        </div>
+
+        <!-- solo comprar -->
+        <div class="form-section" data-only="producto">
+          <span class="form-kicker">producto</span>
+          <div class="chip-row" data-field="producto" id="productChips"></div>
+          <input type="hidden" name="producto" id="fld-producto">
+        </div>
+
+        <!-- archivo: todo menos comprar -->
+        <div class="form-section" data-only="impresion laser modelado planimetria electronica web otro">
+          <span class="form-kicker">archivo o referencias (opcional)</span>
+          <span class="form-help">.stl, .obj, .step, .dxf/.svg/.ai, planos o imágenes: súbelos a WeTransfer, Drive o Dropbox y pega el enlace</span>
+          <input type="url" name="archivo" class="line-input" placeholder="https://">
+        </div>
+
+        <div class="form-section">
+          <span class="form-label">cuéntanos más<span class="required">*</span></span>
+          <span class="form-help">qué es, medidas aproximadas, para qué sirve y cualquier referencia que tengas</span>
+          <textarea name="descripcion" id="fld-descripcion" class="desc-area" rows="4"
+            placeholder="ej: necesito un soporte para audífonos de unos 20 cm de alto..."></textarea>
+        </div>
+
+        <div class="form-section">
+          <div class="contact-grid">
+            <div>
+              <span class="mini-label">nombre<span class="required">*</span></span>
+              <input type="text" name="nombre" placeholder="tu nombre" autocomplete="name">
+            </div>
+            <div>
+              <span class="mini-label">instagram o correo<span class="required">*</span></span>
+              <input type="text" name="contacto" placeholder="@usuario o correo" autocomplete="off">
+            </div>
+            <div class="full">
+              <span class="mini-label">comuna / ciudad</span>
+              <input type="text" name="ciudad" placeholder="para coordinar envío o retiro">
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-row">
+          <button type="button" class="btn-submit" data-channel="mail">enviar por correo <span>→</span></button>
+          <button type="button" class="btn-submit-alt" data-channel="whatsapp">enviar por whatsapp <span>↗</span></button>
+        </div>
+        <p class="form-note mono muted">cotización gratis · respuesta en menos de 48 h</p>
+      </form>
+
+      <div class="success-card" id="successCard">
+        <h3 class="success-title">¡listo!</h3>
+        <p class="success-text">
+          Recibimos tu mensaje y te respondemos con presupuesto y plazo en menos de 48 horas.
+          Si es urgente, escríbenos directo por WhatsApp.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <p class="foot-name">duo</p>
+      <p class="foot-tag">estudio de diseño y fabricación digital</p>
+    </div>
+    <nav class="foot-col" aria-label="secciones">
+      <p class="mono muted">secciones</p>
+      <a href="#tienda">tienda</a>
+      <a href="#servicios">servicios</a>
+      <a href="#proyectos">proyectos</a>
+      <a href="#nosotros">nosotros</a>
+      <a href="#contacto">contacto</a>
+    </nav>
+    <div class="foot-col">
+      <p class="mono muted">servicios</p>
+      <a href="#servicios">impresión 3d</a>
+      <a href="#servicios">corte láser</a>
+      <a href="#servicios">modelado 3d y renders</a>
+      <a href="#servicios">planimetrías</a>
+      <a href="#servicios">electrónica</a>
+      <a href="#servicios">sitios web</a>
+    </div>
+    <div class="foot-col">
+      <p class="mono muted">contacto</p>
+      <a href="https://www.instagram.com/duo.workss/" target="_blank" rel="noopener">instagram ↗</a>
+      <a href="mailto:duo.workss11@gmail.com" id="footerMail">duo.workss11@gmail.com</a>
+    </div>
+  </div>
+  <div class="foot-base mono muted">
+    <span>© 2026 duo</span>
+    <span>hecho en chile</span>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true">
+  <button class="modal-close" id="modalClose" aria-label="cerrar">esc · cerrar</button>
+  <div class="modal">
+    <div class="modal-img-wrap"><img id="modalImg" src="" alt=""></div>
+    <div class="modal-info">
+      <p class="mono muted">proyecto</p>
+      <h3 class="modal-name" id="modalName"></h3>
+      <p class="mono" id="modalMeta"></p>
+      <p class="modal-desc" id="modalDesc"></p>
+      <button class="btn-modal-order" id="modalOrder">encargar algo así <span>→</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ══ DATOS: editar acá ══ */
+  const CONTACT_EMAIL = 'duo.workss11@gmail.com';
+  const CONTACT_WA    = '56900000000'; // 56 + 9 + número, sin + ni espacios
+
+  const PALETTE = [
+    { hex:'#C9A21F', name:'mostaza'  },
+    { hex:'#141414', name:'negro'    },
+    { hex:'#F2EDE0', name:'crema'    },
+    { hex:'#E08898', name:'rosado'   },
+    { hex:'#5E2820', name:'burdeo'   },
+    { hex:'#998C7E', name:'arena'    },
+    { hex:'#5A6878', name:'pizarra'  },
+    { hex:'#2E52A0', name:'azul'     },
+    { hex:'#7AB4D0', name:'celeste'  },
+    { hex:'#3EAAAA', name:'turquesa' },
+    { hex:'#F5C400', name:'amarillo' },
+    { hex:'#C43820', name:'rojo'     },
+  ];
+
+  /* proyectos · tipo: servicio que se preselecciona al encargar · alt: foto al pasar el mouse */
+  const WORKS = [
+    { name: 'floreros',              label: 'objetos',     tipo: 'impresion',   img: 'assets/img/florero-arco.jpg', alt: 'assets/img/florero-estriado.jpg', modal: 'assets/img/floreros.jpg',
+      desc: 'Serie de dos floreros: uno con base en arco y tubo de vidrio, y otro vertical de sección cuadrada. Ambos tienen una textura estriada que deja ver las capas de impresión.' },
+    { name: 'lámpara torsión',       label: 'iluminación', tipo: 'impresion',   img: 'assets/img/lampara-1.jpg',    alt: 'assets/img/lampara-2.jpg',
+      desc: 'Pantalla translúcida con geometría en torsión. La luz se difunde entre las capas y cambia según el ángulo.' },
+    { name: 'wearable',              label: 'electrónica', tipo: 'electronica', img: 'assets/img/wearable.jpg',
+      desc: 'Carcasa a medida para un prototipo electrónico usable: soporte para placa, protoboard y cableado.' },
+    { name: 'estructura expositiva', label: 'instalación', tipo: 'electronica', img: 'assets/img/instalacion.jpg',
+      desc: 'Uniones impresas para una estructura expositiva de madera con pantallas.' },
+  ];
+
+  /* tienda · precios provisorios */
+  const PRODUCTS = [
+    { name: 'florero arco',      price: '$ 00.000', img: 'assets/img/florero-arco.jpg' },
+    { name: 'florero estriado',  price: '$ 00.000', img: 'assets/img/florero-estriado.jpg' },
+    { name: 'lámpara torsión',   price: '$ 00.000', img: 'assets/img/lampara-1.jpg' },
+    { name: 'set de escritorio', price: '$ 00.000', img: 'assets/img/escritorio.jpg' },
+  ];
+
+  const waLink = text => `https://wa.me/${CONTACT_WA}?text=${encodeURIComponent(text)}`;
+  const pad = n => String(n + 1).padStart(2, '0');
+
+  /* ── RENDER: proyectos ── */
+  const worksGrid = document.getElementById('worksGrid');
+  worksGrid.innerHTML = WORKS.map((w, i) => `
+    <div class="work" data-idx="${i}">
+      <div class="work-img">
+        <img src="${w.img}" alt="${w.name}" loading="lazy">
+        ${w.alt ? `<img class="alt" src="${w.alt}" alt="" loading="lazy">` : ''}
+      </div>
+      <div class="work-cap mono"><span>${pad(i)} — ${w.name}</span><span class="muted">${w.label}</span></div>
+    </div>`).join('');
+
+  /* ── RENDER: tienda ── */
+  document.getElementById('shopGrid').innerHTML = PRODUCTS.map(p => `
+    <div class="product">
+      <div class="product-img"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
+      <div class="product-row">
+        <span class="product-name">${p.name}</span>
+        <span class="mono">${p.price}</span>
+      </div>
+      <a class="product-buy" target="_blank" rel="noopener"
+         href="${waLink(`hola duo, me interesa el producto: ${p.name}`)}">comprar ↗</a>
+    </div>`).join('');
+
+  /* ── RENDER: colores (servicio + formulario) ── */
+  const cp = document.getElementById('colorPicker');
+  cp.innerHTML = `<button type="button" class="color-swatch no-pref selected" data-value="sin preferencia" title="sin preferencia"></button>` +
+    PALETTE.map(c => `<button type="button" class="color-swatch" style="background:${c.hex}" data-value="${c.name}" title="${c.name}"></button>`).join('');
+  cp.addEventListener('click', e => {
+    const sw = e.target.closest('.color-swatch');
+    if (!sw) return;
+    cp.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('selected', s === sw));
+    document.getElementById('fld-color').value = sw.dataset.value;
+  });
+
+  document.getElementById('productChips').innerHTML = PRODUCTS.map(p =>
+    `<button type="button" class="chip" data-value="${p.name}">${p.name}</button>`).join('');
+
+  /* ── CURSOR ── */
+  const cur = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button, .work, input, textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('hover'));
+  });
+
+  /* ── NAV MENÚ (móvil) ── */
+  const navTop  = document.querySelector('nav.top');
+  const navMenu = document.getElementById('navMenu');
+  function setMenu(open) {
+    navTop.classList.toggle('open', open);
+    navMenu.setAttribute('aria-expanded', open);
+    navMenu.textContent = open ? 'cerrar' : 'menú';
+  }
+  navMenu.addEventListener('click', () => setMenu(!navTop.classList.contains('open')));
+  navTop.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+
+  /* ── HERO: foto que cambia dentro de *( ) ── */
+  const heroLink = document.querySelector('.hero-img');
+  const heroImg  = document.getElementById('heroImg');
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const frames = heroLink.dataset.cycle.split(' ');
+    frames.forEach(src => { new Image().src = src; });
+    let k = 0;
+    setInterval(() => { k = (k + 1) % frames.length; heroImg.src = frames[k]; }, 1100);
+  }
+
+  /* ── FORMULARIO: selección de chips + tipo ── */
+  const form = document.getElementById('orderForm');
+  function pick(group, value) {
+    group.querySelectorAll('.chip').forEach(b => b.classList.toggle('selected', b.dataset.value === value));
+    const input = document.getElementById('fld-' + group.dataset.field);
+    if (input) input.value = value;
+    if (group.dataset.field === 'tipo') form.dataset.tipo = value;
+  }
+  form.querySelectorAll('.chip-row').forEach(group => {
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('.chip');
+      if (btn) pick(group, btn.dataset.value);
+    });
+  });
+  function goToContact(tipo) {
+    pick(form.querySelector('[data-field="tipo"]'), tipo);
+    document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  /* ── SERVICIOS: imagen al pasar el mouse + clic lleva al formulario ── */
+  const svcPreview = document.getElementById('svcPreview');
+  document.querySelectorAll('.svc-row').forEach(row => {
+    if (row.dataset.img) {
+      new Image().src = row.dataset.img;
+      row.addEventListener('mouseenter', () => { svcPreview.src = row.dataset.img; svcPreview.classList.add('show'); });
+    }
+    row.addEventListener('mouseleave', () => svcPreview.classList.remove('show'));
+    row.addEventListener('click', e => { e.preventDefault(); goToContact(row.dataset.tipo); });
+  });
+  document.addEventListener('mousemove', e => {
+    svcPreview.style.left = e.clientX + 'px';
+    svcPreview.style.top  = e.clientY + 'px';
+  });
+
+  /* ── MODAL ── */
+  const overlay = document.getElementById('modalOverlay');
+  let current = null;
+  function openModal(i) {
+    current = WORKS[i];
+    document.getElementById('modalName').textContent = current.name;
+    document.getElementById('modalMeta').textContent = current.label;
+    document.getElementById('modalDesc').textContent = current.desc;
+    document.getElementById('modalImg').src = current.modal || current.img;
+    document.getElementById('modalImg').alt = current.name;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  worksGrid.addEventListener('click', e => {
+    const w = e.target.closest('.work');
+    if (w) openModal(+w.dataset.idx);
+  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalOrder').addEventListener('click', () => {
+    closeModal();
+    goToContact(current.tipo);
+    const d = document.getElementById('fld-descripcion');
+    if (!d.value) d.value = `me gustaría algo como "${current.name}". `;
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+
+  /* ── ENVIAR (correo / whatsapp) ── */
+  const TIPO_LABEL = {
+    impresion: 'impresión 3d', laser: 'corte láser', modelado: 'modelado 3d / renders', planimetria: 'planimetría', electronica: 'electrónica', web: 'sitio web',
+    producto: 'comprar un producto', otro: 'otro',
+  };
+  document.querySelectorAll('[data-channel]').forEach(btn => btn.addEventListener('click', () => {
+    const f   = new FormData(form);
+    const get = k => (f.get(k) || '').toString().trim();
+    const tipo = get('tipo');
+
+    const missing = [['tipo', '¿qué necesitas?'], ['descripcion', 'cuéntanos más'], ['nombre', 'nombre'], ['contacto', 'instagram o correo']]
+      .filter(([k]) => !get(k)).map(([, label]) => label);
+    if (missing.length) { alert('Faltan campos obligatorios: ' + missing.join(', ')); return; }
+
+    const lines = ['pedido duo', '——————————', `tipo: ${TIPO_LABEL[tipo]}`];
+    if (tipo === 'impresion') {
+      lines.push(`material: ${get('material')}`, `color: ${get('color')}`, `cantidad: ${get('cantidad') || 1}`, `plazo: ${get('urgencia')}`);
+    }
+    if (tipo === 'producto' && get('producto')) lines.push(`producto: ${get('producto')}`);
+    if (tipo !== 'producto' && get('archivo'))  lines.push(`archivo: ${get('archivo')}`);
+    lines.push('', 'detalle:', get('descripcion'), '', 'contacto:',
+      [get('nombre'), get('contacto'), get('ciudad')].filter(Boolean).join(' · '));
+    const text = lines.join('\n');
+
+    if (btn.dataset.channel === 'whatsapp') {
+      window.open(waLink(text), '_blank');
+    } else {
+      const subject = `pedido duo — ${TIPO_LABEL[tipo]}`;
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    }
+    form.style.display = 'none';
+    document.getElementById('successCard').style.display = 'block';
+  }));
+
+  /* ── WHATSAPP FLOTANTE: aparece después del hero, se oculta en contacto ── */
+  const floatWa = document.getElementById('floatWa');
+  floatWa.href = waLink('hola duo, quiero hacer una consulta');
+  let pastHero = false, inContact = false, inFooter = false;
+  const syncWa = () => floatWa.classList.toggle('visible', pastHero && !inContact && !inFooter);
+  new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; syncWa(); }, { threshold: 0.15 })
+    .observe(document.getElementById('hero'));
+  new IntersectionObserver(([e]) => { inContact = e.isIntersecting; syncWa(); }, { threshold: 0.2 })
+    .observe(document.getElementById('contacto'));
+  new IntersectionObserver(([e]) => { inFooter = e.isIntersecting; syncWa(); })
+    .observe(document.querySelector('footer'));
+</script>
+</body>
+</html>
