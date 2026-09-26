@@ -849,6 +849,8 @@
         <input type="hidden" name="_captcha" value="false">
         <input type="hidden" name="_next" id="fld-next">
         <input type="hidden" name="_url" id="fld-url">
+        <input type="hidden" name="n° pedido" id="fld-pedido">
+        <input type="hidden" name="generar cotización" id="fld-cotizar">
         <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <!-- 1 · servicio -->
@@ -1105,6 +1107,7 @@
       <div class="success-card" id="successCard">
         <h3 class="success-title">¡listo!</h3>
         <p class="success-text">
+          <span id="successNum"></span>
           Recibimos tu pedido y te respondemos al correo con presupuesto y plazo en menos de 48 horas.
           Si es urgente, escríbenos directo por WhatsApp.
         </p>
@@ -1167,9 +1170,13 @@
 <script>
   /* ══ DATOS: editar acá ══ */
   const CONTACT_EMAIL = 'duo.workss11@gmail.com';
-  const CONTACT_WA    = '56900000000'; // 56 + 9 + número, sin + ni espacios
+  const CONTACT_WA    = '56933859247'; // 56 + 9 + número, sin + ni espacios
   // formulario de pedidos (FormSubmit): código aleatorio que reemplaza al correo, para no dejarlo visible en el código
   const FORM_ENDPOINT = 'd3b373aace51b28ba3bbd39a7e860e36';
+  // planilla de pedidos (Google Apps Script): pega aquí la URL que termina en /exec. Vacío = no se registra.
+  const SHEETS_URL    = '';
+  // cotizador interno: el correo de cada pedido trae un enlace que lo abre ya rellenado
+  const COTIZADOR_URL = 'https://emiguerra.github.io/duo-web/cotizador/';
 
   const PALETTE = [
     { hex:'#C9A21F', name:'mostaza'  },
@@ -1417,9 +1424,43 @@
       .map(el => [el.name, el.value.trim()]);
   }
 
+  // número de pedido (ej: P-261003-1530-7K) y enlace al cotizador con los datos ya cargados
+  function prepararPedido() {
+    const idEl = document.getElementById('fld-pedido');
+    if (!idEl.value) {
+      const d = new Date();
+      idEl.value = `P-${String(d.getFullYear()).slice(2)}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-` +
+                   `${pad2(d.getHours())}${pad2(d.getMinutes())}-${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
+    }
+    const campos  = Object.fromEntries(answeredFields());
+    const APARTE  = ['n° pedido', 'generar cotización', 'servicio', 'nombre', 'email', 'comuna', 'descripcion', 'enlace', 'cantidad'];
+    const detalle = [campos.descripcion, '',
+      ...Object.entries(campos).filter(([k]) => !APARTE.includes(k)).map(([k, v]) => `${k}: ${v}`)].join('\n');
+    const q = new URLSearchParams({
+      pedido:   idEl.value,
+      cliente:  campos.nombre || '',
+      correo:   campos.email || '',
+      proyecto: campos.servicio || '',
+      titulo:   campos.servicio || '',
+      detalle,
+      cant:     campos.cantidad || '1',
+    });
+    document.getElementById('fld-cotizar').value = `${COTIZADOR_URL}?${q}`;
+  }
+
+  // copia del pedido a la planilla; sendBeacon sigue enviando aunque la página cambie
+  function logToSheet(canal) {
+    if (!SHEETS_URL) return;
+    const pairs = [['canal', canal], ...answeredFields()];
+    if (fileInput.files[0]) pairs.push(['archivo adjunto', fileInput.files[0].name + ' (ver correo)']);
+    navigator.sendBeacon(SHEETS_URL, new URLSearchParams(pairs));
+  }
+
   form.addEventListener('submit', e => {
     const miss = missingFields();
     if (miss.length) { e.preventDefault(); alert('Falta completar: ' + miss.join(', ')); return; }
+    prepararPedido();
+    logToSheet('formulario');
     // solo viajan al correo las respuestas del servicio elegido
     [...form.elements].forEach(el => {
       if (!el.name || el.name.startsWith('_')) return;
@@ -1427,16 +1468,18 @@
       el.disabled = !inActiveSection(el) || !el.value.trim();
     });
     document.getElementById('fld-subject').value =
-      `pedido duo — ${SERVICIOS[form.dataset.tipo].label} — ${document.getElementById('fld-nombre').value.trim()}`;
+      `pedido ${document.getElementById('fld-pedido').value} — ${SERVICIOS[form.dataset.tipo].label} — ${document.getElementById('fld-nombre').value.trim()}`;
     const pageUrl = location.href.split(/[?#]/)[0];
     document.getElementById('fld-url').value  = pageUrl;
-    document.getElementById('fld-next').value = pageUrl + '?enviado=1#contacto';
+    document.getElementById('fld-next').value = pageUrl + '?enviado=' + encodeURIComponent(document.getElementById('fld-pedido').value) + '#contacto';
   });
   // si vuelven atrás en el navegador, reactivar los campos
   window.addEventListener('pageshow', () => [...form.elements].forEach(el => { el.disabled = false; }));
 
   // al volver de FormSubmit: mostrar confirmación
-  if (new URLSearchParams(location.search).has('enviado')) {
+  const enviado = new URLSearchParams(location.search).get('enviado');
+  if (enviado) {
+    if (enviado !== '1') document.getElementById('successNum').textContent = `Tu número de pedido es ${enviado}.`;
     form.style.display = 'none';
     document.getElementById('successCard').style.display = 'block';
   }
@@ -1444,7 +1487,9 @@
   document.getElementById('sendWa').addEventListener('click', () => {
     const miss = missingFields();
     if (miss.length) { alert('Falta completar: ' + miss.join(', ')); return; }
-    const text = ['pedido duo', '——————————', ...answeredFields().map(([k, v]) => `${k}: ${v}`)].join('\n');
+    prepararPedido();
+    logToSheet('whatsapp');
+    const text = ['pedido duo', '——————————', ...answeredFields().filter(([k]) => k !== 'generar cotización').map(([k, v]) => `${k}: ${v}`)].join('\n');
     window.open(waLink(text), '_blank');
   });
 
