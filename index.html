@@ -462,6 +462,29 @@
     .btn-submit-alt:hover { background: var(--ink); color: var(--bg); }
     .form-note { margin-top: 14px; }
     .honey { display: none; }
+
+    /* fecha y hora */
+    .date-input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      font-family: var(--body);
+      font-size: 16px;
+      color: var(--ink);
+      color-scheme: light;
+      outline: none;
+      cursor: none;
+      transition: border-color .2s;
+    }
+    .date-input:focus { border-color: var(--ink); }
+    .date-note {
+      margin-top: 12px;
+      padding-left: 12px;
+      border-left: 2px solid var(--accent);
+      font-size: 13px;
+      line-height: 1.5;
+    }
     .form-kicker.sub, .split.sub { margin-top: 22px; }
     .form-help.tight { margin: 6px 0 0; }
 
@@ -825,6 +848,7 @@
         <input type="hidden" name="_template" value="table">
         <input type="hidden" name="_captcha" value="false">
         <input type="hidden" name="_next" id="fld-next">
+        <input type="hidden" name="_url" id="fld-url">
         <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <!-- 1 · servicio -->
@@ -1030,15 +1054,15 @@
 
         <!-- 5 · plazo -->
         <div class="form-section">
-          <span class="form-kicker">05 — plazo</span>
-          <span class="form-label">¿para cuándo lo necesitas?</span>
-          <div class="chip-row" data-field="plazo">
-            <button type="button" class="chip" data-value="lo antes posible">lo antes posible</button>
-            <button type="button" class="chip" data-value="esta semana">esta semana</button>
-            <button type="button" class="chip" data-value="este mes">este mes</button>
-            <button type="button" class="chip selected" data-value="flexible">flexible</button>
-          </div>
-          <input type="hidden" name="plazo" value="flexible">
+          <span class="form-kicker">05 — fecha</span>
+          <span class="form-label">¿para cuándo lo necesitas?<span class="required">*</span></span>
+          <span class="form-help">elige el día y la hora exactos</span>
+          <!-- sin name: se envía la versión legible del campo oculto de abajo -->
+          <input type="datetime-local" id="fld-fecha" class="date-input" step="900">
+          <input type="hidden" name="fecha solicitada" id="fld-fecha-txt">
+          <p class="date-note">
+            Estamos sujetos a disponibilidad. Recibirás un correo confirmando si la fecha es posible.
+          </p>
         </div>
 
         <!-- 6 · datos -->
@@ -1144,8 +1168,8 @@
   /* ══ DATOS: editar acá ══ */
   const CONTACT_EMAIL = 'duo.workss11@gmail.com';
   const CONTACT_WA    = '56900000000'; // 56 + 9 + número, sin + ni espacios
-  // formulario de pedidos (FormSubmit). Tras activar el correo, puedes reemplazarlo por el código aleatorio que te envían.
-  const FORM_ENDPOINT = CONTACT_EMAIL;
+  // formulario de pedidos (FormSubmit): código aleatorio que reemplaza al correo, para no dejarlo visible en el código
+  const FORM_ENDPOINT = 'd3b373aace51b28ba3bbd39a7e860e36';
 
   const PALETTE = [
     { hex:'#C9A21F', name:'mostaza'  },
@@ -1356,6 +1380,18 @@
     fileDrop.classList.toggle('has-file', !!ok);
   });
 
+  /* ── FECHA: no permitir fechas pasadas y guardar versión legible ── */
+  const fechaInput = document.getElementById('fld-fecha');
+  const fechaTxt   = document.getElementById('fld-fecha-txt');
+  const pad2 = n => String(n).padStart(2, '0');
+  const now  = new Date();
+  fechaInput.min = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}T${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+  fechaInput.addEventListener('change', () => {
+    fechaTxt.value = fechaInput.value
+      ? new Date(fechaInput.value).toLocaleString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
+      : '';
+  });
+
   /* ── ENVIAR ── */
   form.action = `https://formsubmit.co/${FORM_ENDPOINT}`;
 
@@ -1368,6 +1404,8 @@
     const miss = [];
     if (!form.dataset.tipo)   miss.push('¿qué necesitas?');
     if (!val('descripcion'))  miss.push('cuéntanos más');
+    if (!fechaInput.value)    miss.push('fecha y hora');
+    else if (new Date(fechaInput.value) < new Date()) miss.push('una fecha futura');
     if (!val('nombre'))       miss.push('nombre');
     if (!/^\S+@\S+\.\S+$/.test(val('email'))) miss.push('correo válido');
     return miss;
@@ -1390,7 +1428,9 @@
     });
     document.getElementById('fld-subject').value =
       `pedido duo — ${SERVICIOS[form.dataset.tipo].label} — ${document.getElementById('fld-nombre').value.trim()}`;
-    document.getElementById('fld-next').value = location.href.split(/[?#]/)[0] + '?enviado=1#contacto';
+    const pageUrl = location.href.split(/[?#]/)[0];
+    document.getElementById('fld-url').value  = pageUrl;
+    document.getElementById('fld-next').value = pageUrl + '?enviado=1#contacto';
   });
   // si vuelven atrás en el navegador, reactivar los campos
   window.addEventListener('pageshow', () => [...form.elements].forEach(el => { el.disabled = false; }));
