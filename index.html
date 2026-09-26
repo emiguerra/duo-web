@@ -842,15 +842,8 @@
   <div class="contact">
     <div class="form-panel">
       <h3 class="process-title">contacto</h3>
-      <form class="order-form" id="orderForm" method="POST" enctype="multipart/form-data" novalidate>
-        <!-- FormSubmit: campos de configuración (se completan en el script) -->
-        <input type="hidden" name="_subject" id="fld-subject" value="pedido duo">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_next" id="fld-next">
-        <input type="hidden" name="_url" id="fld-url">
+      <form class="order-form" id="orderForm" novalidate>
         <input type="hidden" name="n° pedido" id="fld-pedido">
-        <input type="hidden" name="generar cotización" id="fld-cotizar">
         <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <!-- 1 · servicio -->
@@ -1036,13 +1029,13 @@
         <div class="form-section">
           <span class="form-kicker">03 — archivo (opcional)</span>
           <span class="form-label">sube tu archivo</span>
-          <span class="form-help" id="fileHelp">un archivo de hasta 10 MB</span>
+          <span class="form-help" id="fileHelp">un archivo de hasta 20 MB</span>
           <label class="file-drop" id="fileDrop">
             <input type="file" name="archivo" id="fld-archivo">
             <span class="file-drop-text" id="fileName">elegir archivo</span>
             <span class="mono">↑</span>
           </label>
-          <span class="form-kicker sub">¿pesa más de 10 MB o son varios?</span>
+          <span class="form-kicker sub">¿pesa más de 20 MB o son varios?</span>
           <input type="url" name="enlace" class="line-input" placeholder="pega un enlace de WeTransfer, Drive o Dropbox">
         </div>
 
@@ -1171,12 +1164,8 @@
   /* ══ DATOS: editar acá ══ */
   const CONTACT_EMAIL = 'duo.workss11@gmail.com';
   const CONTACT_WA    = '56933859247'; // 56 + 9 + número, sin + ni espacios
-  // formulario de pedidos (FormSubmit): código aleatorio que reemplaza al correo, para no dejarlo visible en el código
-  const FORM_ENDPOINT = 'd3b373aace51b28ba3bbd39a7e860e36';
-  // planilla de pedidos (Google Apps Script): pega aquí la URL que termina en /exec. Vacío = no se registra.
-  const SHEETS_URL    = 'https://script.google.com/macros/s/AKfycbxt-KlxXjqHi-8zxVp5unbEG_YLkMFDcUqy1hTp5s2UDQa_8RUH8GiG4jeoUaZMRiOsAQ/exec';
-  // cotizador interno: el correo de cada pedido trae un enlace que lo abre ya rellenado
-  const COTIZADOR_URL = 'https://emiguerra.github.io/duo-web/cotizador/';
+  // pedidos: script de Google (Apps Script) que guarda en la planilla, sube el archivo a Drive y avisa a duo
+  const SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbxt-KlxXjqHi-8zxVp5unbEG_YLkMFDcUqy1hTp5s2UDQa_8RUH8GiG4jeoUaZMRiOsAQ/exec';
 
   const PALETTE = [
     { hex:'#C9A21F', name:'mostaza'  },
@@ -1284,7 +1273,7 @@
 
   /* ── FORMULARIO: servicio + preguntas según el servicio ── */
   const form = document.getElementById('orderForm');
-  const MAX_MB = 10;   // límite de FormSubmit (suma de archivos)
+  const MAX_MB = 20;   // tamaño máximo del archivo (se sube a Google Drive)
   const SERVICIOS = {
     impresion:   { label: 'impresión 3d',          archivo: '.stl, .obj, .3mf o .step',
                    desc: 'ej: un soporte para audífonos de unos 20 cm de alto, para el escritorio' },
@@ -1400,8 +1389,6 @@
   });
 
   /* ── ENVIAR ── */
-  form.action = `https://formsubmit.co/${FORM_ENDPOINT}`;
-
   const inActiveSection = el => {
     const sec = el.closest('[data-only]');
     return !sec || sec.dataset.only.split(' ').includes(form.dataset.tipo);
@@ -1417,79 +1404,65 @@
     if (!/^\S+@\S+\.\S+$/.test(val('email'))) miss.push('correo válido');
     return miss;
   }
-  // campos con respuesta del servicio elegido (sin los de configuración ni el archivo)
+  // respuestas del servicio elegido (sin campos internos ni el archivo)
   function answeredFields() {
     return [...form.elements]
       .filter(el => el.name && !el.name.startsWith('_') && el.type !== 'file' && inActiveSection(el) && el.value.trim())
       .map(el => [el.name, el.value.trim()]);
   }
-
-  // número de pedido (ej: P-261003-1530-7K) y enlace al cotizador con los datos ya cargados
-  function prepararPedido() {
+  // número de pedido, ej: P-261003-1530-7K
+  function numeroPedido() {
     const idEl = document.getElementById('fld-pedido');
     if (!idEl.value) {
       const d = new Date();
       idEl.value = `P-${String(d.getFullYear()).slice(2)}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-` +
                    `${pad2(d.getHours())}${pad2(d.getMinutes())}-${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
     }
-    const campos  = Object.fromEntries(answeredFields());
-    const APARTE  = ['n° pedido', 'generar cotización', 'servicio', 'nombre', 'email', 'comuna', 'descripcion', 'enlace', 'cantidad'];
-    const detalle = [campos.descripcion, '',
-      ...Object.entries(campos).filter(([k]) => !APARTE.includes(k)).map(([k, v]) => `${k}: ${v}`)].join('\n');
-    const q = new URLSearchParams({
-      pedido:   idEl.value,
-      cliente:  campos.nombre || '',
-      correo:   campos.email || '',
-      proyecto: campos.servicio || '',
-      titulo:   campos.servicio || '',
-      detalle,
-      cant:     campos.cantidad || '1',
-    });
-    document.getElementById('fld-cotizar').value = `${COTIZADOR_URL}?${q}`;
+    return idEl.value;
   }
-
-  // copia del pedido a la planilla; sendBeacon sigue enviando aunque la página cambie
-  function logToSheet(canal) {
-    if (!SHEETS_URL) return;
-    const pairs = [['canal', canal], ...answeredFields()];
-    if (fileInput.files[0]) pairs.push(['archivo adjunto', fileInput.files[0].name + ' (ver correo)']);
-    navigator.sendBeacon(SHEETS_URL, new URLSearchParams(pairs));
-  }
-
-  form.addEventListener('submit', e => {
-    const miss = missingFields();
-    if (miss.length) { e.preventDefault(); alert('Falta completar: ' + miss.join(', ')); return; }
-    prepararPedido();
-    logToSheet('formulario');
-    // solo viajan al correo las respuestas del servicio elegido
-    [...form.elements].forEach(el => {
-      if (!el.name || el.name.startsWith('_')) return;
-      if (el.type === 'file') { el.disabled = !el.files.length; return; }
-      el.disabled = !inActiveSection(el) || !el.value.trim();
-    });
-    document.getElementById('fld-subject').value =
-      `pedido ${document.getElementById('fld-pedido').value} — ${SERVICIOS[form.dataset.tipo].label} — ${document.getElementById('fld-nombre').value.trim()}`;
-    const pageUrl = location.href.split(/[?#]/)[0];
-    document.getElementById('fld-url').value  = pageUrl;
-    document.getElementById('fld-next').value = pageUrl + '?enviado=' + encodeURIComponent(document.getElementById('fld-pedido').value) + '#contacto';
+  const fileToBase64 = file => new Promise((ok, fail) => {
+    const r = new FileReader();
+    r.onload  = () => ok(r.result.split(',')[1]);
+    r.onerror = fail;
+    r.readAsDataURL(file);
   });
-  // si vuelven atrás en el navegador, reactivar los campos
-  window.addEventListener('pageshow', () => [...form.elements].forEach(el => { el.disabled = false; }));
 
-  // al volver de FormSubmit: mostrar confirmación
-  const enviado = new URLSearchParams(location.search).get('enviado');
-  if (enviado) {
-    if (enviado !== '1') document.getElementById('successNum').textContent = `Tu número de pedido es ${enviado}.`;
-    form.style.display = 'none';
-    document.getElementById('successCard').style.display = 'block';
-  }
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (form.querySelector('[name="_honey"]').value) return;     // bot
+    const miss = missingFields();
+    if (miss.length) { alert('Falta completar: ' + miss.join(', ')); return; }
+
+    const btn = form.querySelector('.btn-submit');
+    btn.disabled = true;
+    btn.firstChild.textContent = 'enviando… ';
+    try {
+      const id = numeroPedido();
+      const pairs = [['canal', 'formulario'], ['_fecha_ms', String(new Date(fechaInput.value).getTime())], ...answeredFields()];
+      const file = fileInput.files[0];
+      if (file) pairs.push(['archivo_nombre', file.name], ['archivo_tipo', file.type || 'application/octet-stream'],
+                           ['archivo_b64', await fileToBase64(file)]);
+      // no-cors: Google no deja leer la respuesta, pero el pedido llega igual
+      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(pairs) });
+      document.getElementById('successNum').textContent = `Tu número de pedido es ${id}.`;
+      form.style.display = 'none';
+      document.getElementById('successCard').style.display = 'block';
+      document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      alert('No pudimos enviar tu pedido. Revisa tu conexión e inténtalo de nuevo, o escríbenos por WhatsApp.');
+      btn.disabled = false;
+      btn.firstChild.textContent = 'enviar pedido ';
+    }
+  });
 
   document.getElementById('sendWa').addEventListener('click', () => {
     const miss = missingFields();
     if (miss.length) { alert('Falta completar: ' + miss.join(', ')); return; }
-    prepararPedido();
-    logToSheet('whatsapp');
-    const text = ['pedido duo', '——————————', ...answeredFields().filter(([k]) => k !== 'generar cotización').map(([k, v]) => `${k}: ${v}`)].join('\n');
+    numeroPedido();
+    const pairs = answeredFields();
+    // queda registrado en la planilla (sin archivo)
+    navigator.sendBeacon(SCRIPT_URL, new URLSearchParams([['canal', 'whatsapp'], ['_fecha_ms', String(new Date(fechaInput.value).getTime())], ...pairs]));
+    const text = ['pedido duo', '——————————', ...pairs.map(([k, v]) => `${k}: ${v}`)].join('\n');
     window.open(waLink(text), '_blank');
   });
 
