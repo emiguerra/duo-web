@@ -183,7 +183,7 @@
       margin: 0.04em 0.02em 0.08em;
       background: var(--paper);
     }
-    .hero-img img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-img img { width: 100%; height: 100%; object-fit: contain; }
 
     /* ── TRABAJOS ── */
     .bar {
@@ -204,7 +204,7 @@
     .work-img { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--paper); }
     .work-img img {
       width: 100%; height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       transition: transform .7s cubic-bezier(.2,.7,.2,1), opacity .4s;
     }
     .work-img .alt { position: absolute; inset: 0; opacity: 0; }
@@ -222,7 +222,7 @@
     }
     .product { display: flex; flex-direction: column; }
     .product-img { aspect-ratio: 1; overflow: hidden; background: var(--paper); }
-    .product-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+    .product-img img { width: 100%; height: 100%; object-fit: contain; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
     .product:hover .product-img img { transform: scale(1.04); }
     .product-row {
       display: flex;
@@ -277,8 +277,7 @@
       position: fixed;
       top: 0; left: 0;
       width: 260px;
-      aspect-ratio: 4 / 5;
-      object-fit: cover;
+      height: auto;
       pointer-events: none;
       z-index: 400;
       opacity: 0;
@@ -296,7 +295,7 @@
       .svc-name { grid-column: 2; font-size: 32px; }
       .svc-desc { grid-column: 2; font-size: 13px; }
       .svc-arrow { display: none; }
-      .svc-thumb { display: block; grid-column: 3; grid-row: 1 / span 2; width: 84px; aspect-ratio: 4 / 5; object-fit: cover; }
+      .svc-thumb { display: block; grid-column: 3; grid-row: 1 / span 2; width: 84px; aspect-ratio: 4 / 5; object-fit: contain; background: var(--paper); }
     }
 
     /* ── NOSOTROS ── */
@@ -362,7 +361,6 @@
     .order-form[data-tipo="planimetria"] [data-only~="planimetria"],
     .order-form[data-tipo="electronica"] [data-only~="electronica"],
     .order-form[data-tipo="web"] [data-only~="web"],
-    .order-form[data-tipo="producto"] [data-only~="producto"],
     .order-form[data-tipo="otro"] [data-only~="otro"] { display: block; }
 
     .form-kicker {
@@ -463,6 +461,27 @@
     .btn-submit-alt { background: transparent; }
     .btn-submit-alt:hover { background: var(--ink); color: var(--bg); }
     .form-note { margin-top: 14px; }
+    .honey { display: none; }
+    .form-kicker.sub, .split.sub { margin-top: 22px; }
+    .form-help.tight { margin: 6px 0 0; }
+
+    /* subir archivo */
+    .file-drop {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border: 1px dashed rgba(17,17,17,.3);
+      background: var(--bg);
+      cursor: none;
+      transition: border-color .2s;
+    }
+    .file-drop:hover, .file-drop:focus-within { border-color: var(--ink); }
+    .file-drop.has-file { border-style: solid; border-color: var(--ink); }
+    .file-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .file-drop-text { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .success-card { display: none; padding: 40px 0; }
     .success-title { font-family: var(--serif); font-weight: 400; font-size: 44px; line-height: 1; margin-bottom: 14px; }
@@ -510,8 +529,8 @@
     }
     .modal-overlay.open { display: flex; }
     .modal { width: 100%; max-width: 980px; display: grid; grid-template-columns: 1.1fr 1fr; background: var(--paper); }
-    .modal-img-wrap { aspect-ratio: 4 / 5; overflow: hidden; }
-    .modal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-img-wrap { aspect-ratio: 4 / 5; overflow: hidden; background: var(--paper); }
+    .modal-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
     .modal-info { padding: 32px; display: flex; flex-direction: column; gap: 18px; }
     .modal-name { font-family: var(--serif); font-weight: 400; font-size: 44px; line-height: 1; }
     .modal-desc { font-size: 15px; line-height: 1.65; flex: 1; }
@@ -800,110 +819,269 @@
   <div class="contact">
     <div class="form-panel">
       <h3 class="process-title">contacto</h3>
-      <form class="order-form" id="orderForm" novalidate>
+      <form class="order-form" id="orderForm" method="POST" enctype="multipart/form-data" novalidate>
+        <!-- FormSubmit: campos de configuración (se completan en el script) -->
+        <input type="hidden" name="_subject" id="fld-subject" value="pedido duo">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" id="fld-next">
+        <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
 
+        <!-- 1 · servicio -->
         <div class="form-section">
+          <span class="form-kicker">01 — servicio</span>
           <span class="form-label">¿qué necesitas?<span class="required">*</span></span>
-          <div class="chip-row" data-field="tipo">
+          <div class="chip-row" data-field="servicio">
             <button type="button" class="chip" data-value="impresion">impresión 3d</button>
-            <button type="button" class="chip" data-value="laser">corte láser</button>
-            <button type="button" class="chip" data-value="modelado">modelado 3d / renders</button>
+            <button type="button" class="chip" data-value="laser">corte y grabado láser</button>
+            <button type="button" class="chip" data-value="modelado">modelado 3d y renders</button>
             <button type="button" class="chip" data-value="planimetria">planimetría</button>
             <button type="button" class="chip" data-value="electronica">electrónica</button>
             <button type="button" class="chip" data-value="web">sitio web</button>
-            <button type="button" class="chip" data-value="producto">comprar un producto</button>
             <button type="button" class="chip" data-value="otro">otro</button>
           </div>
-          <input type="hidden" name="tipo" id="fld-tipo">
+          <input type="hidden" name="servicio">
         </div>
 
-        <!-- solo impresión 3d -->
+        <!-- 2 · preguntas según el servicio -->
+
+        <!-- impresión 3d -->
         <div class="form-section" data-only="impresion">
-          <span class="form-kicker">material</span>
+          <span class="form-kicker">02 — detalles de la impresión</span>
+          <span class="form-label">¿tienes el archivo 3d?</span>
+          <div class="chip-row" data-field="archivo 3d">
+            <button type="button" class="chip" data-value="sí, lo tengo">sí, lo tengo</button>
+            <button type="button" class="chip" data-value="no, necesito que lo modelen">no, necesito que lo modelen</button>
+          </div>
+          <input type="hidden" name="archivo 3d">
+
+          <span class="form-kicker sub">material</span>
           <span class="form-help">PLA: rígido y económico · PETG: resistente al calor · TPU: flexible</span>
           <div class="chip-row" data-field="material">
             <button type="button" class="chip" data-value="PLA">PLA</button>
             <button type="button" class="chip" data-value="PETG">PETG</button>
-            <button type="button" class="chip" data-value="TPU">TPU (flexible)</button>
+            <button type="button" class="chip" data-value="TPU">TPU</button>
             <button type="button" class="chip selected" data-value="ayúdenme a elegir">ayúdenme a elegir</button>
           </div>
-          <input type="hidden" name="material" id="fld-material" value="ayúdenme a elegir">
-        </div>
+          <input type="hidden" name="material" value="ayúdenme a elegir">
 
-        <div class="form-section" data-only="impresion">
-          <span class="form-kicker">color</span>
+          <span class="form-kicker sub">color</span>
           <div class="color-picker" id="colorPicker"></div>
           <input type="hidden" name="color" id="fld-color" value="sin preferencia">
-        </div>
 
-        <div class="form-section" data-only="impresion">
-          <div class="split">
+          <div class="split sub">
             <div>
               <span class="form-kicker">cantidad</span>
               <input type="number" min="1" value="1" name="cantidad" class="qty-input">
             </div>
             <div>
-              <span class="form-kicker">plazo</span>
-              <div class="chip-row" data-field="urgencia">
-                <button type="button" class="chip" data-value="24 h">24 h</button>
-                <button type="button" class="chip" data-value="48 h">48 h</button>
-                <button type="button" class="chip" data-value="72 h">72 h</button>
-                <button type="button" class="chip selected" data-value="flexible">flexible</button>
-              </div>
-              <input type="hidden" name="urgencia" id="fld-urgencia" value="flexible">
+              <span class="form-kicker">medidas aproximadas</span>
+              <input type="text" name="medidas" class="line-input" placeholder="alto × ancho × profundidad, en cm">
             </div>
           </div>
         </div>
 
-        <!-- solo comprar -->
-        <div class="form-section" data-only="producto">
-          <span class="form-kicker">producto</span>
-          <div class="chip-row" data-field="producto" id="productChips"></div>
-          <input type="hidden" name="producto" id="fld-producto">
+        <!-- corte y grabado láser -->
+        <div class="form-section" data-only="laser">
+          <span class="form-kicker">02 — detalles del corte láser</span>
+          <span class="form-label">¿qué necesitas hacer?</span>
+          <div class="chip-row" data-field="trabajo láser">
+            <button type="button" class="chip" data-value="corte">corte</button>
+            <button type="button" class="chip" data-value="grabado">grabado</button>
+            <button type="button" class="chip" data-value="corte y grabado">corte y grabado</button>
+          </div>
+          <input type="hidden" name="trabajo láser">
+
+          <span class="form-kicker sub">¿tienes el archivo vectorial?</span>
+          <div class="chip-row" data-field="archivo vectorial">
+            <button type="button" class="chip" data-value="sí, lo tengo">sí, lo tengo</button>
+            <button type="button" class="chip" data-value="no, necesito que lo dibujen">no, necesito que lo dibujen</button>
+          </div>
+          <input type="hidden" name="archivo vectorial">
+
+          <div class="split sub">
+            <div>
+              <span class="form-kicker">cantidad</span>
+              <input type="number" min="1" value="1" name="cantidad" class="qty-input">
+            </div>
+            <div>
+              <span class="form-kicker">material y grosor</span>
+              <input type="text" name="material" class="line-input" placeholder="ej: MDF 3 mm, acrílico 5 mm, cartón…">
+              <span class="form-help tight">cortamos cualquier material de hasta 5 mm de grosor</span>
+            </div>
+          </div>
+          <span class="form-kicker sub">medidas aproximadas</span>
+          <input type="text" name="medidas" class="line-input" placeholder="ancho × alto de cada pieza, en cm">
         </div>
 
-        <!-- archivo: todo menos comprar -->
-        <div class="form-section" data-only="impresion laser modelado planimetria electronica web otro">
-          <span class="form-kicker">archivo o referencias (opcional)</span>
-          <span class="form-help">.stl, .obj, .step, .dxf/.svg/.ai, planos o imágenes: súbelos a WeTransfer, Drive o Dropbox y pega el enlace</span>
-          <input type="url" name="archivo" class="line-input" placeholder="https://">
+        <!-- modelado 3d y renders -->
+        <div class="form-section" data-only="modelado">
+          <span class="form-kicker">02 — detalles del modelado</span>
+          <span class="form-label">¿qué necesitas?</span>
+          <div class="chip-row" data-field="entregable">
+            <button type="button" class="chip" data-value="solo el modelo 3d">solo el modelo 3d</button>
+            <button type="button" class="chip" data-value="modelo 3d + renders">modelo 3d + renders</button>
+            <button type="button" class="chip" data-value="renders de un modelo que ya tengo">renders de un modelo que ya tengo</button>
+          </div>
+          <input type="hidden" name="entregable">
+
+          <span class="form-kicker sub">¿para qué es?</span>
+          <div class="chip-row" data-field="uso">
+            <button type="button" class="chip" data-value="fabricar">fabricar</button>
+            <button type="button" class="chip" data-value="presentar">presentar</button>
+            <button type="button" class="chip" data-value="vender">vender</button>
+            <button type="button" class="chip" data-value="otro">otro</button>
+          </div>
+          <input type="hidden" name="uso">
         </div>
 
+        <!-- planimetría -->
+        <div class="form-section" data-only="planimetria">
+          <span class="form-kicker">02 — detalles de la planimetría</span>
+          <span class="form-label">¿de qué es?</span>
+          <div class="chip-row" data-field="planimetría de">
+            <button type="button" class="chip" data-value="una pieza">una pieza</button>
+            <button type="button" class="chip" data-value="un mueble">un mueble</button>
+            <button type="button" class="chip" data-value="un espacio">un espacio</button>
+            <button type="button" class="chip" data-value="otro">otro</button>
+          </div>
+          <input type="hidden" name="planimetría de">
+
+          <span class="form-kicker sub">¿para qué es?</span>
+          <div class="chip-row" data-field="uso">
+            <button type="button" class="chip" data-value="fabricar">fabricar</button>
+            <button type="button" class="chip" data-value="presentar">presentar</button>
+            <button type="button" class="chip" data-value="postular">postular</button>
+            <button type="button" class="chip" data-value="otro">otro</button>
+          </div>
+          <input type="hidden" name="uso">
+
+          <span class="form-kicker sub">formato de entrega (opcional)</span>
+          <input type="text" name="formato" class="line-input" placeholder="pdf, dwg, dxf… entregamos en el formato que necesites">
+        </div>
+
+        <!-- electrónica -->
+        <div class="form-section" data-only="electronica">
+          <span class="form-kicker">02 — detalles del proyecto</span>
+          <span class="form-label">¿qué tipo de proyecto es?</span>
+          <div class="chip-row" data-field="tipo de proyecto">
+            <button type="button" class="chip" data-value="prototipo">prototipo</button>
+            <button type="button" class="chip" data-value="wearable">wearable</button>
+            <button type="button" class="chip" data-value="instalación">instalación</button>
+            <button type="button" class="chip" data-value="objeto interactivo">objeto interactivo</button>
+            <button type="button" class="chip" data-value="otro">otro</button>
+          </div>
+          <input type="hidden" name="tipo de proyecto">
+
+          <span class="form-kicker sub">¿en qué etapa está?</span>
+          <div class="chip-row" data-field="etapa">
+            <button type="button" class="chip" data-value="es una idea">es una idea</button>
+            <button type="button" class="chip" data-value="tengo un prototipo">tengo un prototipo</button>
+            <button type="button" class="chip" data-value="quiero mejorar un proyecto">quiero mejorar un proyecto</button>
+          </div>
+          <input type="hidden" name="etapa">
+        </div>
+
+        <!-- sitio web -->
+        <div class="form-section" data-only="web">
+          <span class="form-kicker">02 — detalles del sitio</span>
+          <span class="form-label">¿qué tipo de sitio?</span>
+          <div class="chip-row" data-field="tipo de sitio">
+            <button type="button" class="chip" data-value="portafolio">portafolio</button>
+            <button type="button" class="chip" data-value="tienda">tienda</button>
+            <button type="button" class="chip" data-value="landing / una página">landing / una página</button>
+            <button type="button" class="chip" data-value="otro">otro</button>
+          </div>
+          <input type="hidden" name="tipo de sitio">
+
+          <span class="form-kicker sub">¿tienes los textos y las fotos?</span>
+          <div class="chip-row" data-field="contenido">
+            <button type="button" class="chip" data-value="sí">sí</button>
+            <button type="button" class="chip" data-value="en parte">en parte</button>
+            <button type="button" class="chip" data-value="no">no</button>
+          </div>
+          <input type="hidden" name="contenido">
+
+          <span class="form-kicker sub">webs de referencia (opcional)</span>
+          <input type="text" name="referencias" class="line-input" placeholder="links de sitios que te gusten">
+        </div>
+
+        <!-- 3 · archivo -->
         <div class="form-section">
+          <span class="form-kicker">03 — archivo (opcional)</span>
+          <span class="form-label">sube tu archivo</span>
+          <span class="form-help" id="fileHelp">un archivo de hasta 10 MB</span>
+          <label class="file-drop" id="fileDrop">
+            <input type="file" name="archivo" id="fld-archivo">
+            <span class="file-drop-text" id="fileName">elegir archivo</span>
+            <span class="mono">↑</span>
+          </label>
+          <span class="form-kicker sub">¿pesa más de 10 MB o son varios?</span>
+          <input type="url" name="enlace" class="line-input" placeholder="pega un enlace de WeTransfer, Drive o Dropbox">
+        </div>
+
+        <!-- 4 · descripción -->
+        <div class="form-section">
+          <span class="form-kicker">04 — descripción</span>
           <span class="form-label">cuéntanos más<span class="required">*</span></span>
-          <span class="form-help">qué es, medidas aproximadas, para qué sirve y cualquier referencia que tengas</span>
           <textarea name="descripcion" id="fld-descripcion" class="desc-area" rows="4"
-            placeholder="ej: necesito un soporte para audífonos de unos 20 cm de alto..."></textarea>
+            placeholder="qué necesitas, para qué es y cualquier referencia que tengas"></textarea>
         </div>
 
+        <!-- 5 · plazo -->
         <div class="form-section">
+          <span class="form-kicker">05 — plazo</span>
+          <span class="form-label">¿para cuándo lo necesitas?</span>
+          <div class="chip-row" data-field="plazo">
+            <button type="button" class="chip" data-value="lo antes posible">lo antes posible</button>
+            <button type="button" class="chip" data-value="esta semana">esta semana</button>
+            <button type="button" class="chip" data-value="este mes">este mes</button>
+            <button type="button" class="chip selected" data-value="flexible">flexible</button>
+          </div>
+          <input type="hidden" name="plazo" value="flexible">
+        </div>
+
+        <!-- 6 · datos -->
+        <div class="form-section">
+          <span class="form-kicker">06 — tus datos</span>
           <div class="contact-grid">
             <div>
               <span class="mini-label">nombre<span class="required">*</span></span>
-              <input type="text" name="nombre" placeholder="tu nombre" autocomplete="name">
+              <input type="text" name="nombre" id="fld-nombre" placeholder="tu nombre" autocomplete="name">
             </div>
             <div>
-              <span class="mini-label">instagram o correo<span class="required">*</span></span>
-              <input type="text" name="contacto" placeholder="@usuario o correo" autocomplete="off">
+              <span class="mini-label">correo<span class="required">*</span></span>
+              <input type="email" name="email" id="fld-email" placeholder="tu@correo.com" autocomplete="email">
             </div>
             <div class="full">
-              <span class="mini-label">comuna / ciudad</span>
-              <input type="text" name="ciudad" placeholder="para coordinar envío o retiro">
+              <span class="mini-label">comuna</span>
+              <input type="text" name="comuna" placeholder="ej: ñuñoa" autocomplete="address-level2">
             </div>
           </div>
         </div>
 
-        <div class="submit-row">
-          <button type="button" class="btn-submit" data-channel="mail">enviar por correo <span>→</span></button>
-          <button type="button" class="btn-submit-alt" data-channel="whatsapp">enviar por whatsapp <span>↗</span></button>
+        <!-- 7 · entrega: solo servicios con objeto físico -->
+        <div class="form-section" data-only="impresion laser electronica">
+          <span class="form-kicker">07 — entrega</span>
+          <span class="form-label">¿cómo lo recibes?</span>
+          <div class="chip-row" data-field="entrega">
+            <button type="button" class="chip" data-value="retiro a coordinar">retiro a coordinar</button>
+            <button type="button" class="chip" data-value="envío">envío</button>
+          </div>
+          <input type="hidden" name="entrega">
         </div>
-        <p class="form-note mono muted">cotización gratis · respuesta en menos de 48 h</p>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-submit">enviar pedido <span>→</span></button>
+          <button type="button" class="btn-submit-alt" id="sendWa">prefiero whatsapp <span>↗</span></button>
+        </div>
+        <p class="form-note mono muted">cotización gratis · respuesta en menos de 48 h · por whatsapp no se envían archivos</p>
       </form>
 
       <div class="success-card" id="successCard">
         <h3 class="success-title">¡listo!</h3>
         <p class="success-text">
-          Recibimos tu mensaje y te respondemos con presupuesto y plazo en menos de 48 horas.
+          Recibimos tu pedido y te respondemos al correo con presupuesto y plazo en menos de 48 horas.
           Si es urgente, escríbenos directo por WhatsApp.
         </p>
       </div>
@@ -966,6 +1144,8 @@
   /* ══ DATOS: editar acá ══ */
   const CONTACT_EMAIL = 'duo.workss11@gmail.com';
   const CONTACT_WA    = '56900000000'; // 56 + 9 + número, sin + ni espacios
+  // formulario de pedidos (FormSubmit). Tras activar el correo, puedes reemplazarlo por el código aleatorio que te envían.
+  const FORM_ENDPOINT = CONTACT_EMAIL;
 
   const PALETTE = [
     { hex:'#C9A21F', name:'mostaza'  },
@@ -1039,9 +1219,6 @@
     document.getElementById('fld-color').value = sw.dataset.value;
   });
 
-  document.getElementById('productChips').innerHTML = PRODUCTS.map(p =>
-    `<button type="button" class="chip" data-value="${p.name}">${p.name}</button>`).join('');
-
   /* ── CURSOR ── */
   const cur = document.getElementById('cursor');
   document.addEventListener('mousemove', e => {
@@ -1074,13 +1251,38 @@
     setInterval(() => { k = (k + 1) % frames.length; heroImg.src = frames[k]; }, 1100);
   }
 
-  /* ── FORMULARIO: selección de chips + tipo ── */
+  /* ── FORMULARIO: servicio + preguntas según el servicio ── */
   const form = document.getElementById('orderForm');
+  const MAX_MB = 10;   // límite de FormSubmit (suma de archivos)
+  const SERVICIOS = {
+    impresion:   { label: 'impresión 3d',          archivo: '.stl, .obj, .3mf o .step',
+                   desc: 'ej: un soporte para audífonos de unos 20 cm de alto, para el escritorio' },
+    laser:       { label: 'corte y grabado láser', archivo: '.dxf, .svg, .ai o .pdf vectorial',
+                   desc: 'ej: 30 posavasos de 10 cm en MDF, grabados con un logo' },
+    modelado:    { label: 'modelado 3d y renders', archivo: 'bocetos, fotos o planos',
+                   desc: 'ej: modelar una lámpara a partir de un boceto y tener 3 renders para presentarla' },
+    planimetria: { label: 'planimetría',           archivo: 'bocetos, fotos, medidas o modelos 3d',
+                   desc: 'ej: planos de un mueble de 120 × 40 cm para mandar a fabricar' },
+    electronica: { label: 'electrónica',           archivo: 'esquemas, fotos o referencias',
+                   desc: 'ej: un objeto que se ilumine cuando alguien se acerca' },
+    web:         { label: 'sitio web',             archivo: 'logo, textos o imágenes',
+                   desc: 'ej: un portafolio de 4 secciones para mostrar mis ilustraciones' },
+    otro:        { label: 'otro',                  archivo: 'cualquier archivo que ayude a entender la idea',
+                   desc: 'qué necesitas, para qué es y cualquier referencia que tengas' },
+  };
+
   function pick(group, value) {
     group.querySelectorAll('.chip').forEach(b => b.classList.toggle('selected', b.dataset.value === value));
-    const input = document.getElementById('fld-' + group.dataset.field);
-    if (input) input.value = value;
-    if (group.dataset.field === 'tipo') form.dataset.tipo = value;
+    const input = group.nextElementSibling;               // el input oculto va justo después de los chips
+    if (group.dataset.field === 'servicio') {
+      const s = SERVICIOS[value];
+      form.dataset.tipo = value;
+      input.value = s.label;
+      document.getElementById('fileHelp').textContent = `${s.archivo} · un archivo de hasta ${MAX_MB} MB`;
+      document.getElementById('fld-descripcion').placeholder = s.desc;
+    } else if (input && input.type === 'hidden') {
+      input.value = value;
+    }
   }
   form.querySelectorAll('.chip-row').forEach(group => {
     group.addEventListener('click', e => {
@@ -1089,7 +1291,7 @@
     });
   });
   function goToContact(tipo) {
-    pick(form.querySelector('[data-field="tipo"]'), tipo);
+    pick(form.querySelector('[data-field="servicio"]'), tipo);
     document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -1140,39 +1342,71 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 
-  /* ── ENVIAR (correo / whatsapp) ── */
-  const TIPO_LABEL = {
-    impresion: 'impresión 3d', laser: 'corte láser', modelado: 'modelado 3d / renders', planimetria: 'planimetría', electronica: 'electrónica', web: 'sitio web',
-    producto: 'comprar un producto', otro: 'otro',
+  /* ── ARCHIVO ── */
+  const fileInput = document.getElementById('fld-archivo');
+  const fileDrop  = document.getElementById('fileDrop');
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files[0];
+    if (f && f.size > MAX_MB * 1024 * 1024) {
+      alert(`El archivo pesa ${(f.size / 1048576).toFixed(1)} MB y el máximo es ${MAX_MB} MB. Súbelo a WeTransfer o Drive y pega el enlace.`);
+      fileInput.value = '';
+    }
+    const ok = fileInput.files[0];
+    document.getElementById('fileName').textContent = ok ? ok.name : 'elegir archivo';
+    fileDrop.classList.toggle('has-file', !!ok);
+  });
+
+  /* ── ENVIAR ── */
+  form.action = `https://formsubmit.co/${FORM_ENDPOINT}`;
+
+  const inActiveSection = el => {
+    const sec = el.closest('[data-only]');
+    return !sec || sec.dataset.only.split(' ').includes(form.dataset.tipo);
   };
-  document.querySelectorAll('[data-channel]').forEach(btn => btn.addEventListener('click', () => {
-    const f   = new FormData(form);
-    const get = k => (f.get(k) || '').toString().trim();
-    const tipo = get('tipo');
+  function missingFields() {
+    const val = n => (form.querySelector(`[name="${n}"]`).value || '').trim();
+    const miss = [];
+    if (!form.dataset.tipo)   miss.push('¿qué necesitas?');
+    if (!val('descripcion'))  miss.push('cuéntanos más');
+    if (!val('nombre'))       miss.push('nombre');
+    if (!/^\S+@\S+\.\S+$/.test(val('email'))) miss.push('correo válido');
+    return miss;
+  }
+  // campos con respuesta del servicio elegido (sin los de configuración ni el archivo)
+  function answeredFields() {
+    return [...form.elements]
+      .filter(el => el.name && !el.name.startsWith('_') && el.type !== 'file' && inActiveSection(el) && el.value.trim())
+      .map(el => [el.name, el.value.trim()]);
+  }
 
-    const missing = [['tipo', '¿qué necesitas?'], ['descripcion', 'cuéntanos más'], ['nombre', 'nombre'], ['contacto', 'instagram o correo']]
-      .filter(([k]) => !get(k)).map(([, label]) => label);
-    if (missing.length) { alert('Faltan campos obligatorios: ' + missing.join(', ')); return; }
+  form.addEventListener('submit', e => {
+    const miss = missingFields();
+    if (miss.length) { e.preventDefault(); alert('Falta completar: ' + miss.join(', ')); return; }
+    // solo viajan al correo las respuestas del servicio elegido
+    [...form.elements].forEach(el => {
+      if (!el.name || el.name.startsWith('_')) return;
+      if (el.type === 'file') { el.disabled = !el.files.length; return; }
+      el.disabled = !inActiveSection(el) || !el.value.trim();
+    });
+    document.getElementById('fld-subject').value =
+      `pedido duo — ${SERVICIOS[form.dataset.tipo].label} — ${document.getElementById('fld-nombre').value.trim()}`;
+    document.getElementById('fld-next').value = location.href.split(/[?#]/)[0] + '?enviado=1#contacto';
+  });
+  // si vuelven atrás en el navegador, reactivar los campos
+  window.addEventListener('pageshow', () => [...form.elements].forEach(el => { el.disabled = false; }));
 
-    const lines = ['pedido duo', '——————————', `tipo: ${TIPO_LABEL[tipo]}`];
-    if (tipo === 'impresion') {
-      lines.push(`material: ${get('material')}`, `color: ${get('color')}`, `cantidad: ${get('cantidad') || 1}`, `plazo: ${get('urgencia')}`);
-    }
-    if (tipo === 'producto' && get('producto')) lines.push(`producto: ${get('producto')}`);
-    if (tipo !== 'producto' && get('archivo'))  lines.push(`archivo: ${get('archivo')}`);
-    lines.push('', 'detalle:', get('descripcion'), '', 'contacto:',
-      [get('nombre'), get('contacto'), get('ciudad')].filter(Boolean).join(' · '));
-    const text = lines.join('\n');
-
-    if (btn.dataset.channel === 'whatsapp') {
-      window.open(waLink(text), '_blank');
-    } else {
-      const subject = `pedido duo — ${TIPO_LABEL[tipo]}`;
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-    }
+  // al volver de FormSubmit: mostrar confirmación
+  if (new URLSearchParams(location.search).has('enviado')) {
     form.style.display = 'none';
     document.getElementById('successCard').style.display = 'block';
-  }));
+  }
+
+  document.getElementById('sendWa').addEventListener('click', () => {
+    const miss = missingFields();
+    if (miss.length) { alert('Falta completar: ' + miss.join(', ')); return; }
+    const text = ['pedido duo', '——————————', ...answeredFields().map(([k, v]) => `${k}: ${v}`)].join('\n');
+    window.open(waLink(text), '_blank');
+  });
 
   /* ── WHATSAPP FLOTANTE: aparece después del hero, se oculta en contacto ── */
   const floatWa = document.getElementById('floatWa');
