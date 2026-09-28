@@ -196,7 +196,7 @@
 
     .works-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 4px;
       padding: 0 var(--gutter) 96px;
     }
@@ -216,7 +216,7 @@
     .shop-note { padding: 0 var(--gutter); margin-top: -12px; margin-bottom: 24px; }
     .shop-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 20px;
       padding: 0 var(--gutter) 96px;
     }
@@ -709,8 +709,8 @@
     <span class="hero-line">
       <span>*(</span>
       <a href="#proyectos" class="hero-img" aria-label="ver proyectos"
-        data-cycle="assets/img/lampara-1.jpg assets/img/florero-arco.jpg assets/img/robot.jpg assets/img/escritorio.jpg assets/img/muestrario.jpg assets/img/lampara-2.jpg assets/img/wearable.jpg">
-        <img id="heroImg" src="assets/img/lampara-1.jpg" alt="lámpara torsión encendida">
+        data-cycle="assets/img/uzu002-1.jpg assets/img/florero-arco.jpg assets/img/uzu001-2.jpg assets/img/escritorio.jpg assets/img/muestrario.jpg assets/img/uzu002-2.jpg assets/img/wearable.jpg">
+        <img id="heroImg" src="assets/img/uzu002-1.jpg" alt="lámpara uzu 002 encendida">
       </a>
       <span>)</span>
       <a href="#tienda" class="side-note r">tienda</a>
@@ -727,10 +727,10 @@
   <div class="section-head mono">
     <span>(01) tienda</span>
     <span>productos disponibles</span>
-    <span>04 productos</span>
+    <span>05 productos</span>
   </div>
   <div class="bar">
-    <h2 class="block-title">productos disponibles<sup>(04)</sup></h2>
+    <h2 class="block-title">productos disponibles<sup>(05)</sup></h2>
   </div>
   <p class="shop-note mono muted">compra por whatsapp · envío o retiro</p>
   <div class="shop-grid" id="shopGrid"></div>
@@ -801,10 +801,10 @@
   <div class="section-head mono">
     <span>(03) proyectos</span>
     <span>selección</span>
-    <span>04 piezas</span>
+    <span>05 piezas</span>
   </div>
   <div class="bar">
-    <h2 class="block-title">proyectos<sup>(04)</sup></h2>
+    <h2 class="block-title">proyectos<sup>(05)</sup></h2>
   </div>
   <div class="works-grid" id="worksGrid"></div>
 </section>
@@ -1186,8 +1186,10 @@
   const WORKS = [
     { name: 'floreros',              label: 'objetos',     tipo: 'impresion',   img: 'assets/img/florero-arco.jpg', alt: 'assets/img/florero-estriado.jpg', modal: 'assets/img/floreros.jpg',
       desc: 'Serie de dos floreros: uno con base en arco y tubo de vidrio, y otro vertical de sección cuadrada. Ambos tienen una textura estriada que deja ver las capas de impresión.' },
-    { name: 'lámpara torsión',       label: 'iluminación', tipo: 'impresion',   img: 'assets/img/lampara-1.jpg',    alt: 'assets/img/lampara-2.jpg',
-      desc: 'Pantalla translúcida con geometría en torsión. La luz se difunde entre las capas y cambia según el ángulo.' },
+    { name: 'uzu 001',               label: 'iluminación', tipo: 'impresion',   img: 'assets/img/uzu001-1.jpg',     alt: 'assets/img/uzu001-2.jpg',
+      desc: 'Lámpara de pie modular: piezas en torsión que se apilan y forman una columna de luz. La luz cambia de color.' },
+    { name: 'uzu 002',               label: 'iluminación', tipo: 'impresion',   img: 'assets/img/uzu002-1.jpg',     alt: 'assets/img/uzu002-2.jpg',
+      desc: 'Lámpara de mesa con pantalla en torsión. La luz cambia de color y se difunde entre las capas de impresión.' },
     { name: 'wearable',              label: 'electrónica', tipo: 'electronica', img: 'assets/img/wearable.jpg',
       desc: 'Carcasa a medida para un prototipo electrónico usable: soporte para placa, protoboard y cableado.' },
     { name: 'estructura expositiva', label: 'instalación', tipo: 'electronica', img: 'assets/img/instalacion.jpg',
@@ -1198,7 +1200,8 @@
   const PRODUCTS = [
     { name: 'florero arco',      price: '$ 00.000', img: 'assets/img/florero-arco.jpg' },
     { name: 'florero estriado',  price: '$ 00.000', img: 'assets/img/florero-estriado.jpg' },
-    { name: 'lámpara torsión',   price: '$ 00.000', img: 'assets/img/lampara-1.jpg' },
+    { name: 'uzu 001',           price: '$ 00.000', img: 'assets/img/uzu001-1.jpg' },
+    { name: 'uzu 002',           price: '$ 00.000', img: 'assets/img/uzu002-1.jpg' },
     { name: 'set de escritorio', price: '$ 00.000', img: 'assets/img/escritorio.jpg' },
   ];
 
