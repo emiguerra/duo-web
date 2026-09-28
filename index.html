@@ -46,6 +46,8 @@
       --body:  'Absans', sans-serif;
 
       --gutter: 28px;
+      --foto-gap: 24px;       /* margen entre fotos (columnas) */
+      --foto-fila: 48px;      /* margen entre filas de fotos */
     }
 
     body {
@@ -181,7 +183,6 @@
       aspect-ratio: 1;
       overflow: hidden;
       margin: 0.04em 0.02em 0.08em;
-      background: var(--paper);
     }
     .hero-img img { width: 100%; height: 100%; object-fit: contain; }
 
@@ -197,32 +198,33 @@
     .works-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 4px;
+      gap: var(--foto-fila) var(--foto-gap);
+      align-items: end;
       padding: 0 var(--gutter) 96px;
     }
     .work { cursor: none; }
-    .work-img { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--paper); }
+    .work-img { position: relative; overflow: hidden; }
     .work-img img {
-      width: 100%; height: 100%;
-      object-fit: contain;
+      width: 100%; height: auto;
       transition: transform .7s cubic-bezier(.2,.7,.2,1), opacity .4s;
     }
-    .work-img .alt { position: absolute; inset: 0; opacity: 0; }
+    .work-img .alt { position: absolute; inset: 0; height: 100%; object-fit: contain; background: var(--bg); opacity: 0; }
     .work:hover .work-img img { transform: scale(1.04); }
     .work:hover .work-img .alt { opacity: 1; }
-    .work-cap { display: flex; justify-content: space-between; gap: 12px; padding: 10px 2px 16px; }
+    .work-cap { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0 0; min-height: 44px; }
 
     /* ── TIENDA ── */
     .shop-note { padding: 0 var(--gutter); margin-top: -12px; margin-bottom: 24px; }
     .shop-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 20px;
+      gap: var(--foto-fila) var(--foto-gap);
+      align-items: end;
       padding: 0 var(--gutter) 96px;
     }
     .product { display: flex; flex-direction: column; }
-    .product-img { aspect-ratio: 1; overflow: hidden; background: var(--paper); }
-    .product-img img { width: 100%; height: 100%; object-fit: contain; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+    .product-img { overflow: hidden; }
+    .product-img img { width: 100%; height: auto; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
     .product:hover .product-img img { transform: scale(1.04); }
     .product-row {
       display: flex;
@@ -295,7 +297,7 @@
       .svc-name { grid-column: 2; font-size: 32px; }
       .svc-desc { grid-column: 2; font-size: 13px; }
       .svc-arrow { display: none; }
-      .svc-thumb { display: block; grid-column: 3; grid-row: 1 / span 2; width: 84px; aspect-ratio: 4 / 5; object-fit: contain; background: var(--paper); }
+      .svc-thumb { display: block; grid-column: 3; grid-row: 1 / span 2; width: 84px; aspect-ratio: 4 / 5; object-fit: contain; }
     }
 
     /* ── NOSOTROS ── */
@@ -638,8 +640,8 @@
       .section-head > :nth-child(2) { display: none; }
       .bar { flex-direction: column; align-items: flex-start; padding-top: 40px; }
 
+      :root { --foto-gap: 12px; --foto-fila: 32px; }
       .works-grid, .shop-grid { grid-template-columns: 1fr 1fr; }
-      .shop-grid { gap: 20px 8px; }
       .product-row { flex-direction: column; gap: 4px; }
       .product-name { font-size: 16px; }
 
