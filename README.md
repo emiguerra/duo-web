@@ -21,7 +21,7 @@ el sitio está publicado en [emiguerra.github.io/duo-web](https://emiguerra.gith
 | —   | hero      | `#hero`      | hacemos objetos \*( ) únicos                                      |
 | 01  | tienda    | `#tienda`    | productos disponibles, compra por whatsapp                        |
 | 02  | servicios | `#servicios` | impresión 3d, corte láser, modelado 3d y renders, planimetrías, electrónica, sitios web |
-| 03  | proyectos | `#proyectos` | floreros, uzu 001, uzu 002, wearable, estructura expositiva       |
+| 03  | proyectos | `#proyectos` | floreros, uzu 001, uzu 002, wearable                              |
 | 04  | nosotros  | `#nosotros`  | proceso de trabajo                                                |
 | 05  | contacto  | `#contacto`  | formulario de pedidos                                             |
 

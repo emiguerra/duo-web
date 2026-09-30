@@ -197,18 +197,19 @@
 
     .works-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: var(--foto-fila) var(--foto-gap);
       align-items: end;
       padding: 0 var(--gutter) 96px;
     }
     .work { cursor: none; }
-    .work-img { position: relative; overflow: hidden; }
+    /* cuadros iguales, como en la tienda: la foto llena el cuadro y se recorta centrada */
+    .work-img { position: relative; overflow: hidden; aspect-ratio: 3 / 4; }
     .work-img img {
-      width: 100%; height: auto;
+      width: 100%; height: 100%; object-fit: cover; object-position: center;
       transition: transform .7s cubic-bezier(.2,.7,.2,1), opacity .4s;
     }
-    .work-img .alt { position: absolute; inset: 0; height: 100%; object-fit: contain; background: var(--bg); opacity: 0; }
+    .work-img .alt { position: absolute; inset: 0; background: var(--bg); opacity: 0; }
     .work:hover .work-img img { transform: scale(1.04); }
     .work:hover .work-img .alt { opacity: 1; }
     .work-cap { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0 0; min-height: 44px; }
@@ -223,8 +224,9 @@
       padding: 0 var(--gutter) 96px;
     }
     .product { display: flex; flex-direction: column; }
-    .product-img { overflow: hidden; }
-    .product-img img { width: 100%; height: auto; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+    /* cuadros iguales: la foto original llena el cuadro y se recorta centrada */
+    .product-img { overflow: hidden; aspect-ratio: 3 / 4; }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
     .product:hover .product-img img { transform: scale(1.04); }
     .product-row {
       display: flex;
@@ -803,10 +805,10 @@
   <div class="section-head mono">
     <span>(03) proyectos</span>
     <span>selección</span>
-    <span>05 piezas</span>
+    <span>04 piezas</span>
   </div>
   <div class="bar">
-    <h2 class="block-title">proyectos<sup>(05)</sup></h2>
+    <h2 class="block-title">proyectos<sup>(04)</sup></h2>
   </div>
   <div class="works-grid" id="worksGrid"></div>
 </section>
@@ -845,7 +847,6 @@
     <div class="form-panel">
       <h3 class="process-title">contacto</h3>
       <form class="order-form" id="orderForm" novalidate>
-        <input type="hidden" name="n° pedido" id="fld-pedido">
         <input type="text" name="_honey" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <!-- 1 · servicio -->
@@ -1102,8 +1103,8 @@
       <div class="success-card" id="successCard">
         <h3 class="success-title">¡listo!</h3>
         <p class="success-text">
-          <span id="successNum"></span>
-          Recibimos tu pedido y te respondemos al correo con presupuesto y plazo en menos de 48 horas.
+          Recibimos tu pedido. Te llegará un correo con tu número de pedido, y en menos de 48 horas
+          te enviaremos la cotización y la confirmación de la fecha.
           Si es urgente, escríbenos directo por WhatsApp.
         </p>
       </div>
@@ -1188,14 +1189,12 @@
   const WORKS = [
     { name: 'floreros',              label: 'objetos',     tipo: 'impresion',   img: 'assets/img/florero-arco.jpg', alt: 'assets/img/florero-estriado.jpg', modal: 'assets/img/floreros.jpg',
       desc: 'Serie de dos floreros: uno con base en arco y tubo de vidrio, y otro vertical de sección cuadrada. Ambos tienen una textura estriada que deja ver las capas de impresión.' },
-    { name: 'uzu 001',               label: 'iluminación', tipo: 'impresion',   img: 'assets/img/uzu001-1.jpg',     alt: 'assets/img/uzu001-2.jpg',
+    { name: 'uzu 001',               label: 'iluminación', tipo: 'impresion',   img: 'assets/img/uzu001-1.jpg',     alt: 'assets/img/uzu001-bitmap.png',
       desc: 'Lámpara de pie modular: piezas en torsión que se apilan y forman una columna de luz. La luz cambia de color.' },
-    { name: 'uzu 002',               label: 'iluminación', tipo: 'impresion',   img: 'assets/img/uzu002-1.jpg',     alt: 'assets/img/uzu002-2.jpg',
+    { name: 'uzu 002',               label: 'iluminación', tipo: 'impresion',   img: 'assets/img/uzu002-1.jpg',     alt: 'assets/img/uzu002-bitmap.png',
       desc: 'Lámpara de mesa con pantalla en torsión. La luz cambia de color y se difunde entre las capas de impresión.' },
     { name: 'wearable',              label: 'electrónica', tipo: 'electronica', img: 'assets/img/wearable.jpg',
       desc: 'Carcasa a medida para un prototipo electrónico usable: soporte para placa, protoboard y cableado.' },
-    { name: 'estructura expositiva', label: 'instalación', tipo: 'electronica', img: 'assets/img/instalacion.jpg',
-      desc: 'Uniones impresas para una estructura expositiva de madera con pantallas.' },
   ];
 
   /* tienda · precios provisorios */
@@ -1415,16 +1414,6 @@
       .filter(el => el.name && !el.name.startsWith('_') && el.type !== 'file' && inActiveSection(el) && el.value.trim())
       .map(el => [el.name, el.value.trim()]);
   }
-  // número de pedido, ej: P-261003-1530-7K
-  function numeroPedido() {
-    const idEl = document.getElementById('fld-pedido');
-    if (!idEl.value) {
-      const d = new Date();
-      idEl.value = `P-${String(d.getFullYear()).slice(2)}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-` +
-                   `${pad2(d.getHours())}${pad2(d.getMinutes())}-${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
-    }
-    return idEl.value;
-  }
   const fileToBase64 = file => new Promise((ok, fail) => {
     const r = new FileReader();
     r.onload  = () => ok(r.result.split(',')[1]);
@@ -1442,14 +1431,12 @@
     btn.disabled = true;
     btn.firstChild.textContent = 'enviando… ';
     try {
-      const id = numeroPedido();
       const pairs = [['canal', 'formulario'], ['_fecha_ms', String(new Date(fechaInput.value).getTime())], ...answeredFields()];
       const file = fileInput.files[0];
       if (file) pairs.push(['archivo_nombre', file.name], ['archivo_tipo', file.type || 'application/octet-stream'],
                            ['archivo_b64', await fileToBase64(file)]);
       // no-cors: Google no deja leer la respuesta, pero el pedido llega igual
       await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(pairs) });
-      document.getElementById('successNum').textContent = `Tu número de pedido es ${id}.`;
       form.style.display = 'none';
       document.getElementById('successCard').style.display = 'block';
       document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
@@ -1463,7 +1450,6 @@
   document.getElementById('sendWa').addEventListener('click', () => {
     const miss = missingFields();
     if (miss.length) { alert('Falta completar: ' + miss.join(', ')); return; }
-    numeroPedido();
     const pairs = answeredFields();
     // queda registrado en la planilla (sin archivo)
     navigator.sendBeacon(SCRIPT_URL, new URLSearchParams([['canal', 'whatsapp'], ['_fecha_ms', String(new Date(fechaInput.value).getTime())], ...pairs]));
